@@ -5,506 +5,382 @@
 <title>Verdant — Vermont Forest Mesh Intelligence</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script type="importmap">
-{ "imports": {
-"three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-"three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-}}
+{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}
 </script>
 <style>
-*{box-sizing:border-box}
-body{font-family:'Inter',sans-serif;background:#030708;overflow:hidden;margin:0}
-::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
+*{box-sizing:border-box;margin:0}
+body{font-family:'Inter',sans-serif;background:#030708;overflow:hidden}
+.mono{font-family:'JetBrains Mono',monospace}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:2px}
 input[type=range]{-webkit-appearance:none;width:100%;background:transparent}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;height:14px;width:14px;border-radius:50%;background:#e5e5e5;cursor:pointer;margin-top:-6px;box-shadow:0 0 0 1px rgba(0,0,0,.5);border:1px solid rgba(0,0,0,.1);transition:transform .1s}
-input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.15);background:#fff}
-input[type=range]::-webkit-slider-runnable-track{width:100%;height:2px;cursor:pointer;background:rgba(255,255,255,.15);border-radius:1px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;height:12px;width:12px;border-radius:50%;background:#ccc;cursor:pointer;margin-top:-5px;border:1px solid rgba(0,0,0,.2)}
+input[type=range]::-webkit-slider-runnable-track{width:100%;height:2px;cursor:pointer;background:rgba(255,255,255,.12);border-radius:1px}
 input[type=range]:focus{outline:none}
-.ck{appearance:none;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);border-radius:4px;display:grid;place-content:center;transition:all .2s}
-.ck::before{content:"";width:8px;height:8px;transform:scale(0);transition:120ms transform ease-in-out;box-shadow:inset 1em 1em white;transform-origin:center;clip-path:polygon(14% 44%,0 65%,50% 100%,100% 16%,80% 0%,43% 62%)}
+.ck{appearance:none;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);border-radius:3px;display:grid;place-content:center;transition:all .15s}
+.ck::before{content:"";width:7px;height:7px;transform:scale(0);transition:100ms transform ease-in-out;box-shadow:inset 1em 1em white;transform-origin:center;clip-path:polygon(14% 44%,0 65%,50% 100%,100% 16%,80% 0%,43% 62%)}
 .ck:checked{background:#16a34a;border-color:#16a34a}.ck:checked::before{transform:scale(1)}
 canvas{display:block;outline:none}
-.ev-btn{transition:all .15s}.ev-btn:active{transform:scale(.95)}
-@keyframes pr{0%{box-shadow:0 0 0 0 rgba(22,163,74,.4)}70%{box-shadow:0 0 0 6px rgba(22,163,74,0)}100%{box-shadow:0 0 0 0 rgba(22,163,74,0)}}
+@keyframes pr{0%{box-shadow:0 0 0 0 rgba(22,163,74,.35)}70%{box-shadow:0 0 0 5px rgba(22,163,74,0)}100%{box-shadow:0 0 0 0 rgba(22,163,74,0)}}
 .pd{animation:pr 2s infinite}
-#loading{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:#030708;color:#16a34a;font-size:14px;gap:8px;transition:opacity .6s}
-#loading.hide{opacity:0;pointer-events:none}
+.tab{transition:all .15s;border-bottom:2px solid transparent;padding:6px 0;cursor:pointer;font-size:10px;text-transform:uppercase;letter-spacing:.05em;font-weight:600;color:rgba(255,255,255,.35)}
+.tab:hover{color:rgba(255,255,255,.6)}
+.tab.active{color:#16a34a;border-color:#16a34a}
+.glass{background:rgba(10,15,18,.88);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.06)}
+.ev-btn{transition:all .12s}.ev-btn:active{transform:scale(.94)}
+#loading{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#030708;color:#16a34a;font-size:13px;gap:10px;transition:opacity .5s}
+#loading.done{opacity:0;pointer-events:none}
+.bar{height:4px;border-radius:2px;transition:width .4s}
+.node-row{transition:background .15s}.node-row:hover{background:rgba(255,255,255,.04)}
 </style></head>
 <body class="text-neutral-400">
 
-<div id="loading"><iconify-icon icon="lucide:loader-2" width="20" class="animate-spin"></iconify-icon>Initializing mesh...</div>
+<div id="loading"><iconify-icon icon="lucide:trees" width="28" class="text-emerald-500"></iconify-icon><span>Initializing Verdant Mesh...</span></div>
 <canvas id="c"></canvas>
 
-<div class="fixed inset-0 pointer-events-none z-10 flex flex-col justify-between p-5">
- <header class="flex items-start justify-between gap-4">
-  <div class="flex flex-col gap-1 pointer-events-auto shrink-0">
-   <div class="flex items-center gap-2.5 text-white">
-    <iconify-icon icon="lucide:trees" width="22" class="text-emerald-500"></iconify-icon>
-    <h1 class="text-lg font-semibold tracking-tight">Verdant</h1>
-    <span class="text-[10px] font-medium bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20" id="liveBadge">LIVE</span>
-   </div>
-   <p class="text-[11px] text-neutral-500 font-light tracking-wide ml-[34px]">Vermont Forest Mesh Intelligence</p>
+<!-- ═══ OVERLAY LAYOUT ═══ -->
+<div class="fixed inset-0 pointer-events-none z-10 flex flex-col">
+
+ <!-- TOP BAR -->
+ <div class="flex items-center justify-between px-5 py-3 shrink-0">
+  <div class="flex items-center gap-3 pointer-events-auto">
+   <iconify-icon icon="lucide:trees" width="20" class="text-emerald-500"></iconify-icon>
+   <span class="text-white text-sm font-semibold tracking-tight">Verdant</span>
+   <span class="text-[9px] font-semibold bg-emerald-500/15 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/20">LIVE</span>
+   <span class="text-[10px] text-neutral-600 ml-2 hidden sm:inline">Vermont Forest Mesh Intelligence</span>
   </div>
-  <aside id="panel" class="w-80 bg-neutral-900/85 backdrop-blur-xl border border-white/[.08] rounded-xl shadow-2xl overflow-hidden pointer-events-auto flex flex-col max-h-[92vh]">
-   <div class="px-5 py-3 border-b border-white/5 flex items-center justify-between shrink-0">
-    <span class="text-[11px] font-semibold text-neutral-300 uppercase tracking-wider">Control Panel</span>
-    <button id="resetBtn" class="text-[11px] text-neutral-500 hover:text-white transition-colors flex items-center gap-1"><iconify-icon icon="lucide:rotate-ccw" width="11"></iconify-icon>Reset</button>
-   </div>
-   <div class="p-4 overflow-y-auto flex flex-col gap-4">
+  <div class="flex items-center gap-4 pointer-events-auto text-[10px] mono text-neutral-600">
+   <span id="camPos"></span>
+   <span>CRYSTALS-Dilithium</span>
+   <a href="https://github.com/globalbusinessadvisors/verdant" target="_blank" class="text-neutral-600 hover:text-white transition-colors"><iconify-icon icon="lucide:github" width="15"></iconify-icon></a>
+  </div>
+ </div>
 
-    <!-- MESH -->
-    <section class="space-y-2.5">
-     <div class="flex items-center gap-2 text-neutral-200 text-[11px] font-semibold"><iconify-icon icon="lucide:radio-tower" width="13" class="text-emerald-400"></iconify-icon>Mesh Network</div>
-     <label class="space-y-1 block"><span class="flex justify-between text-[11px]"><span>Sensor Nodes</span><span id="v_nodes" class="text-white font-mono">200</span></span><input type="range" id="s_nodes" min="50" max="500" step="10" value="200"></label>
-     <label class="space-y-1 block"><span class="flex justify-between text-[11px]"><span>RF Range (m)</span><span id="v_rf" class="text-white font-mono">800</span></span><input type="range" id="s_rf" min="200" max="2000" step="50" value="800"></label>
-     <label class="space-y-1 block"><span class="flex justify-between text-[11px]"><span>Zones</span><span id="v_zones" class="text-white font-mono">8</span></span><input type="range" id="s_zones" min="3" max="16" step="1" value="8"></label>
-    </section>
+ <!-- MAIN CONTENT: LEFT SIDEBAR + 3D + RIGHT SIDEBAR -->
+ <div class="flex flex-1 min-h-0 gap-0">
 
-    <hr class="border-white/5">
+  <!-- ═══ LEFT SIDEBAR — DASHBOARD ═══ -->
+  <div class="w-[340px] shrink-0 flex flex-col pointer-events-auto ml-4 mb-4">
+   <div class="glass rounded-xl flex flex-col flex-1 min-h-0 overflow-hidden">
+    <!-- Tabs -->
+    <div class="flex gap-4 px-4 pt-2 border-b border-white/5 shrink-0">
+     <div class="tab active" data-tab="nodes"><iconify-icon icon="lucide:radio-tower" width="11"></iconify-icon> Nodes</div>
+     <div class="tab" data-tab="events"><iconify-icon icon="lucide:activity" width="11"></iconify-icon> Events</div>
+     <div class="tab" data-tab="gov"><iconify-icon icon="lucide:vote" width="11"></iconify-icon> Gov</div>
+     <div class="tab" data-tab="sensors"><iconify-icon icon="lucide:thermometer" width="11"></iconify-icon> Sensors</div>
+     <div class="tab" data-tab="alerts"><iconify-icon icon="lucide:bell" width="11"></iconify-icon> Alerts</div>
+    </div>
+    <!-- Tab Content -->
+    <div class="flex-1 overflow-y-auto p-3" id="tabContent">
 
-    <!-- TERRAIN -->
-    <section class="space-y-2.5">
-     <div class="flex items-center gap-2 text-neutral-200 text-[11px] font-semibold"><iconify-icon icon="lucide:mountain" width="13" class="text-sky-400"></iconify-icon>Terrain</div>
-     <label class="space-y-1 block"><span class="flex justify-between text-[11px]"><span>Elevation</span><span id="v_elev" class="text-white font-mono">1.0</span></span><input type="range" id="s_elev" min="0.3" max="3" step="0.1" value="1.0"></label>
-    </section>
-
-    <hr class="border-white/5">
-
-    <!-- EVENTS -->
-    <section class="space-y-2.5">
-     <div class="flex items-center gap-2 text-neutral-200 text-[11px] font-semibold"><iconify-icon icon="lucide:zap" width="13" class="text-amber-400"></iconify-icon>Simulate Event</div>
-     <div class="grid grid-cols-3 gap-2">
-      <button id="bFlood" class="ev-btn py-2 rounded-lg text-[10px] font-semibold bg-blue-500/15 text-blue-400 border border-blue-500/20 hover:bg-blue-500/30"><iconify-icon icon="lucide:droplets" width="14" class="block mx-auto mb-1"></iconify-icon>Flood</button>
-      <button id="bPest" class="ev-btn py-2 rounded-lg text-[10px] font-semibold bg-orange-500/15 text-orange-400 border border-orange-500/20 hover:bg-orange-500/30"><iconify-icon icon="lucide:bug" width="14" class="block mx-auto mb-1"></iconify-icon>Pest</button>
-      <button id="bFire" class="ev-btn py-2 rounded-lg text-[10px] font-semibold bg-red-500/15 text-red-400 border border-red-500/20 hover:bg-red-500/30"><iconify-icon icon="lucide:flame" width="14" class="block mx-auto mb-1"></iconify-icon>Fire</button>
+     <!-- NODES TAB -->
+     <div id="tab_nodes" class="space-y-2">
+      <div class="flex items-center justify-between mb-2">
+       <span class="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold">Active Mesh Nodes</span>
+       <span id="nodeTotal" class="text-[10px] mono text-emerald-400">200 online</span>
+      </div>
+      <div id="nodeList" class="space-y-1"></div>
      </div>
-    </section>
 
-    <hr class="border-white/5">
-
-    <!-- DISPLAY -->
-    <section class="space-y-2">
-     <div class="flex items-center gap-2 text-neutral-200 text-[11px] font-semibold"><iconify-icon icon="lucide:eye" width="13"></iconify-icon>Display</div>
-     <div class="flex items-center justify-between"><label for="cConn" class="text-[11px] cursor-pointer">Mesh Links</label><input type="checkbox" id="cConn" class="ck w-4 h-4 cursor-pointer" checked></div>
-     <div class="flex items-center justify-between"><label for="cRot" class="text-[11px] cursor-pointer">Auto Rotate</label><input type="checkbox" id="cRot" class="ck w-4 h-4 cursor-pointer" checked></div>
-     <div class="flex items-center justify-between"><label for="cData" class="text-[11px] cursor-pointer">Live Data Flow</label><input type="checkbox" id="cData" class="ck w-4 h-4 cursor-pointer" checked></div>
-    </section>
-
-    <hr class="border-white/5">
-
-    <!-- STATS -->
-    <section class="space-y-2.5">
-     <div class="flex items-center gap-2 text-neutral-200 text-[11px] font-semibold"><iconify-icon icon="lucide:activity" width="13" class="text-emerald-400"></iconify-icon>Network Health</div>
-     <div class="grid grid-cols-2 gap-2">
-      <div class="bg-white/5 rounded-lg p-2"><div class="text-[9px] text-neutral-500">Active Nodes</div><div id="stN" class="text-sm font-mono text-emerald-400">200</div></div>
-      <div class="bg-white/5 rounded-lg p-2"><div class="text-[9px] text-neutral-500">Mesh Links</div><div id="stL" class="text-sm font-mono text-sky-400">0</div></div>
-      <div class="bg-white/5 rounded-lg p-2"><div class="text-[9px] text-neutral-500">Events</div><div id="stE" class="text-sm font-mono text-amber-400">0</div></div>
-      <div class="bg-white/5 rounded-lg p-2"><div class="text-[9px] text-neutral-500">Avg PDR</div><div id="stP" class="text-sm font-mono text-purple-400">97%</div></div>
+     <!-- EVENTS TAB -->
+     <div id="tab_events" class="space-y-2 hidden">
+      <div class="flex items-center justify-between mb-2">
+       <span class="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold">Event Timeline</span>
+       <span id="evtTotal" class="text-[10px] mono text-amber-400">0 confirmed</span>
+      </div>
+      <div id="evtTimeline" class="space-y-1.5"></div>
      </div>
-     <!-- Event Log -->
-     <div id="eventLog" class="text-[10px] font-mono space-y-0.5 max-h-20 overflow-y-auto"></div>
-    </section>
 
-    <button id="warpBtn" class="group relative w-full py-2 bg-emerald-600 text-white text-[11px] font-semibold rounded-lg hover:bg-emerald-500 transition-all overflow-hidden flex items-center justify-center gap-2 active:scale-95 mt-1">
-     <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 pointer-events-none"></div>
-     <iconify-icon id="warpIco" icon="lucide:mountain-snow" width="13"></iconify-icon>
-     <span id="warpTxt">Fly to Green Mountains</span>
-    </button>
+     <!-- GOVERNANCE TAB -->
+     <div id="tab_gov" class="space-y-3 hidden">
+      <div class="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold mb-2">Active Proposals</div>
+      <div id="govList" class="space-y-2.5"></div>
+     </div>
+
+     <!-- SENSORS TAB -->
+     <div id="tab_sensors" class="space-y-3 hidden">
+      <div class="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold mb-2">Zone Sensor Readings</div>
+      <div id="sensorGrid" class="space-y-2"></div>
+     </div>
+
+     <!-- ALERTS TAB -->
+     <div id="tab_alerts" class="space-y-2 hidden">
+      <div class="flex items-center justify-between mb-2">
+       <span class="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold">Active Alerts</span>
+       <span id="alertCount" class="text-[10px] mono text-red-400">0 active</span>
+      </div>
+      <div id="alertList" class="space-y-1.5"></div>
+     </div>
+
+    </div>
    </div>
-  </aside>
- </header>
+  </div>
 
- <footer class="flex items-end justify-between pointer-events-none">
-  <div class="flex items-center gap-5 text-[11px] font-mono text-neutral-600">
-   <div class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-emerald-500 pd"></div><span id="sysMsg">Mesh Active — All Zones Nominal</span></div>
-   <div id="camPos" class="hidden sm:block"></div>
+  <!-- 3D CANVAS AREA (fills remaining space) -->
+  <div class="flex-1"></div>
+
+  <!-- ═══ RIGHT SIDEBAR — CONTROLS ═══ -->
+  <div class="w-[260px] shrink-0 flex flex-col pointer-events-auto mr-4 mb-4">
+   <div class="glass rounded-xl flex flex-col flex-1 min-h-0 overflow-hidden">
+    <div class="px-4 py-2.5 border-b border-white/5 flex items-center justify-between shrink-0">
+     <span class="text-[10px] font-semibold text-neutral-300 uppercase tracking-wider">Controls</span>
+     <button id="resetBtn" class="text-[10px] text-neutral-500 hover:text-white transition-colors flex items-center gap-1"><iconify-icon icon="lucide:rotate-ccw" width="10"></iconify-icon>Reset</button>
+    </div>
+    <div class="p-3 overflow-y-auto flex flex-col gap-3 flex-1">
+
+     <section class="space-y-2">
+      <div class="flex items-center gap-1.5 text-neutral-200 text-[10px] font-semibold"><iconify-icon icon="lucide:radio-tower" width="11" class="text-emerald-400"></iconify-icon>Network</div>
+      <label class="space-y-0.5 block"><span class="flex justify-between text-[10px]"><span>Nodes</span><span id="v_n" class="text-white mono">200</span></span><input type="range" id="s_n" min="50" max="500" step="10" value="200"></label>
+      <label class="space-y-0.5 block"><span class="flex justify-between text-[10px]"><span>RF Range</span><span id="v_r" class="text-white mono">800m</span></span><input type="range" id="s_r" min="200" max="2000" step="50" value="800"></label>
+      <label class="space-y-0.5 block"><span class="flex justify-between text-[10px]"><span>Zones</span><span id="v_z" class="text-white mono">8</span></span><input type="range" id="s_z" min="3" max="16" step="1" value="8"></label>
+     </section>
+
+     <hr class="border-white/5">
+
+     <section class="space-y-2">
+      <div class="flex items-center gap-1.5 text-neutral-200 text-[10px] font-semibold"><iconify-icon icon="lucide:mountain" width="11" class="text-sky-400"></iconify-icon>Terrain</div>
+      <label class="space-y-0.5 block"><span class="flex justify-between text-[10px]"><span>Elevation</span><span id="v_e" class="text-white mono">1.0x</span></span><input type="range" id="s_e" min="0.3" max="3" step="0.1" value="1.0"></label>
+     </section>
+
+     <hr class="border-white/5">
+
+     <section class="space-y-2">
+      <div class="flex items-center gap-1.5 text-neutral-200 text-[10px] font-semibold"><iconify-icon icon="lucide:zap" width="11" class="text-amber-400"></iconify-icon>Inject Event</div>
+      <div class="grid grid-cols-3 gap-1.5">
+       <button id="bF" class="ev-btn py-1.5 rounded text-[9px] font-semibold bg-blue-500/15 text-blue-400 border border-blue-500/20 hover:bg-blue-500/30"><iconify-icon icon="lucide:droplets" width="12" class="block mx-auto mb-0.5"></iconify-icon>Flood</button>
+       <button id="bP" class="ev-btn py-1.5 rounded text-[9px] font-semibold bg-orange-500/15 text-orange-400 border border-orange-500/20 hover:bg-orange-500/30"><iconify-icon icon="lucide:bug" width="12" class="block mx-auto mb-0.5"></iconify-icon>Pest</button>
+       <button id="bR" class="ev-btn py-1.5 rounded text-[9px] font-semibold bg-red-500/15 text-red-400 border border-red-500/20 hover:bg-red-500/30"><iconify-icon icon="lucide:flame" width="12" class="block mx-auto mb-0.5"></iconify-icon>Fire</button>
+      </div>
+     </section>
+
+     <hr class="border-white/5">
+
+     <section class="space-y-1.5">
+      <div class="flex items-center gap-1.5 text-neutral-200 text-[10px] font-semibold"><iconify-icon icon="lucide:eye" width="11"></iconify-icon>Display</div>
+      <div class="flex items-center justify-between"><label for="cC" class="text-[10px] cursor-pointer">Mesh Links</label><input type="checkbox" id="cC" class="ck w-3.5 h-3.5 cursor-pointer" checked></div>
+      <div class="flex items-center justify-between"><label for="cR" class="text-[10px] cursor-pointer">Auto Rotate</label><input type="checkbox" id="cR" class="ck w-3.5 h-3.5 cursor-pointer" checked></div>
+      <div class="flex items-center justify-between"><label for="cD" class="text-[10px] cursor-pointer">Data Flow</label><input type="checkbox" id="cD" class="ck w-3.5 h-3.5 cursor-pointer" checked></div>
+     </section>
+
+     <hr class="border-white/5">
+
+     <!-- Compact stats -->
+     <div class="grid grid-cols-2 gap-1.5">
+      <div class="bg-white/[.03] rounded p-1.5"><div class="text-[8px] text-neutral-500">Nodes</div><div id="stN" class="text-xs mono text-emerald-400">200</div></div>
+      <div class="bg-white/[.03] rounded p-1.5"><div class="text-[8px] text-neutral-500">Links</div><div id="stL" class="text-xs mono text-sky-400">0</div></div>
+      <div class="bg-white/[.03] rounded p-1.5"><div class="text-[8px] text-neutral-500">Events</div><div id="stE" class="text-xs mono text-amber-400">0</div></div>
+      <div class="bg-white/[.03] rounded p-1.5"><div class="text-[8px] text-neutral-500">PDR</div><div id="stP" class="text-xs mono text-purple-400">97%</div></div>
+     </div>
+
+     <button id="warpBtn" class="group relative w-full py-1.5 bg-emerald-600 text-white text-[10px] font-semibold rounded hover:bg-emerald-500 transition-all overflow-hidden flex items-center justify-center gap-1.5 active:scale-95">
+      <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none"></div>
+      <iconify-icon id="wI" icon="lucide:mountain-snow" width="11"></iconify-icon>
+      <span id="wT">Fly to Green Mountains</span>
+     </button>
+    </div>
+   </div>
   </div>
-  <div class="flex items-center gap-4 pointer-events-auto">
-   <span class="text-[9px] text-neutral-600 font-mono tracking-wide">CRYSTALS-Dilithium Secured</span>
-   <a href="https://github.com/globalbusinessadvisors/verdant" target="_blank" class="text-neutral-600 hover:text-white transition-colors"><iconify-icon icon="lucide:github" width="16"></iconify-icon></a>
-  </div>
- </footer>
+ </div>
+
+ <!-- BOTTOM STATUS BAR -->
+ <div class="flex items-center justify-between px-5 py-2 shrink-0 pointer-events-none">
+  <div class="flex items-center gap-2 text-[10px] mono text-neutral-600"><div class="w-1.5 h-1.5 rounded-full bg-emerald-500 pd"></div><span id="sysMsg">Mesh Active — All Zones Nominal</span></div>
+ </div>
 </div>
 
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-/* ═══════════════════════════════════════════════════════════════
-   CONFIG
-   ═══════════════════════════════════════════════════════════════ */
-const P = { nodes:200, rf:800, zones:8, elev:1, conn:true, rot:true, data:true };
-const TW=13, TH=25, SX=120, SZ=220, ES=4;
-let evtCount=0, linkCount=0, nodePos=[], nodeZn=[];
+/* ═══ PARAMS ═══ */
+const P={nodes:200,rf:800,zones:8,elev:1,conn:true,rot:true,data:true};
+const TW=13,TH=25,SX=110,SZ=200,ES=4;
+let evtCount=0,linkCount=0,nodePos=[],nodeZn=[],simNodes=[];
 
-/* ═══════════════════════════════════════════════════════════════
-   VERMONT BOUNDARY  (normalized [0,1] — wider at north, narrow south)
-   ═══════════════════════════════════════════════════════════════ */
-const VB=[
- [.05,0],[.48,0],[.50,.04],[.53,.10],[.56,.16],[.59,.22],[.62,.28],[.65,.34],
- [.68,.40],[.71,.46],[.74,.52],[.77,.58],[.80,.64],[.84,.71],[.88,.78],
- [.92,.85],[.96,.92],[1,1],
- [0,1],[0,.94],[.015,.86],[.005,.78],[.02,.70],[.04,.62],[.05,.54],
- [.04,.46],[.025,.38],[.02,.30],[.03,.22],[.04,.14],[.05,.07],[.05,0]
-];
-function inVT(x,z){let c=false;for(let i=0,j=VB.length-1;i<VB.length;j=i++){
- const[xi,yi]=VB[i],[xj,yj]=VB[j];
- if((yi>z)!==(yj>z)&&x<(xj-xi)*(z-yi)/(yj-yi)+xi)c=!c;}return c;}
+/* ═══ VERMONT BOUNDARY ═══ */
+const VB=[[.05,0],[.48,0],[.50,.04],[.53,.10],[.56,.16],[.59,.22],[.62,.28],[.65,.34],[.68,.40],[.71,.46],[.74,.52],[.77,.58],[.80,.64],[.84,.71],[.88,.78],[.92,.85],[.96,.92],[1,1],[0,1],[0,.94],[.015,.86],[.005,.78],[.02,.70],[.04,.62],[.05,.54],[.04,.46],[.025,.38],[.02,.30],[.03,.22],[.04,.14],[.05,.07],[.05,0]];
+function inVT(x,z){let c=false;for(let i=0,j=VB.length-1;i<VB.length;j=i++){const[xi,yi]=VB[i],[xj,yj]=VB[j];if((yi>z)!==(yj>z)&&x<(xj-xi)*(z-yi)/(yj-yi)+xi)c=!c;}return c;}
 
-/* ═══════════════════════════════════════════════════════════════
-   NOISE
-   ═══════════════════════════════════════════════════════════════ */
+/* ═══ NOISE ═══ */
 function H(a,b){let h=(a*2654435761^b*2246822519)>>>0;h=((h>>16)^h)*0x45d9f3b>>>0;return(h&0xffff)/65535;}
-function sn(x,y){const ix=Math.floor(x),iy=Math.floor(y),fx=x-ix,fy=y-iy,
- sx=fx*fx*(3-2*fx),sy=fy*fy*(3-2*fy),
- a=H(ix,iy),b=H(ix+1,iy),c=H(ix,iy+1),d=H(ix+1,iy+1);
- return a+(b-a)*sx+(c-a)*sy+(a-b-c+d)*sx*sy;}
+function sn(x,y){const ix=Math.floor(x),iy=Math.floor(y),fx=x-ix,fy=y-iy,sx=fx*fx*(3-2*fx),sy=fy*fy*(3-2*fy);return H(ix,iy)+(H(ix+1,iy)-H(ix,iy))*sx+(H(ix,iy+1)-H(ix,iy))*sy+(H(ix,iy)-H(ix+1,iy)-H(ix,iy+1)+H(ix+1,iy+1))*sx*sy;}
 function fbm(x,y,o){let v=0,a=.5,f=1;for(let i=0;i<o;i++){v+=a*sn(x*f,y*f);f*=2.1;a*=.48;}return v;}
 
-/* ═══════════════════════════════════════════════════════════════
-   ELEVATION & COLOR
-   ═══════════════════════════════════════════════════════════════ */
-function elev(nx,nz){
- const rx=.42+.04*Math.sin(nz*6.3), dr=nx-rx;
- const ridge=Math.exp(-dr*dr*45)*.72;
- const mansfield=Math.exp(-((nx-.40)**2+(nz-.78)**2)*100)*.38;
- const killington=Math.exp(-((nx-.50)**2+(nz-.46)**2)*90)*.30;
- const camel=Math.exp(-((nx-.38)**2+(nz-.72)**2)*110)*.27;
- const jay=Math.exp(-((nx-.28)**2+(nz-.93)**2)*100)*.24;
- const stowe=Math.exp(-((nx-.36)**2+(nz-.75)**2)*80)*.18;
- const champlain=Math.max(0,1-nx*9)*.22;
- const ct=Math.max(0,1-(1-nx)*7)*.13*(0.4+0.6*nz);
- const base=.14+.06*(1-2*Math.abs(nx-.43));
- const n1=fbm(nx*10,nz*10,4)*.11;
- const n2=fbm(nx*25+5,nz*25+5,3)*.04;
- return Math.max(.01,base+ridge+mansfield+killington+camel+jay+stowe-champlain-ct+n1+n2);
-}
+/* ═══ ELEVATION ═══ */
+function elev(nx,nz){const rx=.42+.04*Math.sin(nz*6.3),dr=nx-rx;return Math.max(.01,.14+.06*(1-2*Math.abs(nx-.43))+Math.exp(-dr*dr*45)*.72+Math.exp(-((nx-.40)**2+(nz-.78)**2)*100)*.38+Math.exp(-((nx-.50)**2+(nz-.46)**2)*90)*.30+Math.exp(-((nx-.38)**2+(nz-.72)**2)*110)*.27+Math.exp(-((nx-.28)**2+(nz-.93)**2)*100)*.24-Math.max(0,1-nx*9)*.22-Math.max(0,1-(1-nx)*7)*.13*(.4+.6*nz)+fbm(nx*10,nz*10,4)*.11+fbm(nx*25+5,nz*25+5,3)*.04);}
+function tColor(e){const t=Math.min(e/.95,1);return[Math.min(1,.06+t*.55+(H(e*1000|0,42)-.5)*.04),Math.min(1,.14+t*.42),Math.min(1,.08+t*.32)];}
 
-const CC=[[.01,.10,.05,.18,.14,.22,.25,.15,.30,.2,.12,.35,.25,.10,.42,.30,.08,.48,.33,.06,.55,.38,.12,.62,.42,.16,.72,.48,.22,.8,.55,.3,.88,.62,.38,.95,.7,.55,1,.78,.66]];
-function tColor(e){
- const t=Math.min(e/.95,1);
- const r=.06+t*.55, g=.14+t*.42, b=.08+t*.32;
- const v=(H(e*1000|0,42)-.5)*.04;
- return [Math.min(1,r+v),Math.min(1,g+v*.8),Math.min(1,b+v*.6)];
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   THREE.JS SCENE
-   ═══════════════════════════════════════════════════════════════ */
-const cv=document.getElementById('c');
-const sc=new THREE.Scene();
-sc.fog=new THREE.FogExp2(0x030708,.006);
+/* ═══ THREE.JS ═══ */
+const cv=document.getElementById('c'),sc=new THREE.Scene();
+sc.fog=new THREE.FogExp2(0x030708,.005);
 const sz={w:innerWidth,h:innerHeight};
-const cam=new THREE.PerspectiveCamera(50,sz.w/sz.h,.1,600);
-cam.position.set(2,20,26);
-
+const cam=new THREE.PerspectiveCamera(50,sz.w/sz.h,.1,600);cam.position.set(2,20,26);
 const ren=new THREE.WebGLRenderer({canvas:cv,antialias:true,powerPreference:'high-performance'});
 ren.setSize(sz.w,sz.h);ren.setPixelRatio(Math.min(devicePixelRatio,2));ren.setClearColor(0x030708);
+const ctl=new OrbitControls(cam,cv);ctl.enableDamping=true;ctl.dampingFactor=.05;ctl.autoRotate=true;ctl.autoRotateSpeed=.25;ctl.maxDistance=55;ctl.minDistance=4;ctl.maxPolarAngle=Math.PI/2.15;ctl.target.set(0,0,-2);
+sc.add(new THREE.AmbientLight(0x506878,.8));const sun=new THREE.DirectionalLight(0xffeedd,1.5);sun.position.set(12,25,10);sc.add(sun);sc.add(new THREE.HemisphereLight(0x5080a0,0x203020,.5));
+const sG=new THREE.BufferGeometry(),sC=3000,sP=new Float32Array(sC*3);for(let i=0;i<sC*3;i++)sP[i]=(Math.random()-.5)*400;sG.setAttribute('position',new THREE.BufferAttribute(sP,3));sc.add(new THREE.Points(sG,new THREE.PointsMaterial({size:.12,color:0x445566,sizeAttenuation:true,depthWrite:false})));
 
-const ctl=new OrbitControls(cam,cv);
-ctl.enableDamping=true;ctl.dampingFactor=.05;ctl.autoRotate=true;ctl.autoRotateSpeed=.25;
-ctl.maxDistance=55;ctl.minDistance=4;ctl.maxPolarAngle=Math.PI/2.15;ctl.target.set(0,0,-2);
-
-// Lights
-sc.add(new THREE.AmbientLight(0x506878,.8));
-const sun=new THREE.DirectionalLight(0xffeedd,1.5);sun.position.set(12,25,10);sc.add(sun);
-sc.add(new THREE.DirectionalLight(0x3060aa,.4).translateX(-12).translateY(8).translateZ(-10));
-const hemi=new THREE.HemisphereLight(0x5080a0,0x203020,.5);sc.add(hemi);
-
-// Stars
-const sG=new THREE.BufferGeometry(),sC=4000,sP=new Float32Array(sC*3);
-for(let i=0;i<sC*3;i++)sP[i]=(Math.random()-.5)*400;
-sG.setAttribute('position',new THREE.BufferAttribute(sP,3));
-sc.add(new THREE.Points(sG,new THREE.PointsMaterial({size:.15,color:0x445566,sizeAttenuation:true,depthWrite:false})));
-
-/* ═══════════════════════════════════════════════════════════════
-   TERRAIN
-   ═══════════════════════════════════════════════════════════════ */
-const tGrp=new THREE.Group();sc.add(tGrp);
-let waterMesh;
-
-function buildTerrain(){
- tGrp.clear();
- const vs=[],cs=[],ix=[];
- for(let iz=0;iz<=SZ;iz++){for(let jx=0;jx<=SX;jx++){
-  const nx=jx/SX,nz=iz/SZ,inside=inVT(nx,nz);
-  const wx=(nx-.5)*TW,wz=(nz-.5)*TH;
-  let y,r,g,b;
-  if(inside){
-   const e=elev(nx,nz);y=e*ES*P.elev;
-   [r,g,b]=tColor(e);
-  } else { y=-.2;r=.012;g=.02;b=.035; }
-  vs.push(wx,y,wz);cs.push(r,g,b);
- }}
- for(let iz=0;iz<SZ;iz++){for(let jx=0;jx<SX;jx++){
-  const a=iz*(SX+1)+jx,b=a+1,c=a+SX+1,d=c+1;
-  ix.push(a,c,b,b,c,d);
- }}
- const geo=new THREE.BufferGeometry();
- geo.setAttribute('position',new THREE.Float32BufferAttribute(vs,3));
- geo.setAttribute('color',new THREE.Float32BufferAttribute(cs,3));
- geo.setIndex(ix);geo.computeVertexNormals();
- const mesh=new THREE.Mesh(geo,new THREE.MeshPhongMaterial({
-  vertexColors:true,side:THREE.FrontSide,shininess:8,specular:0x111111,flatShading:false
- }));
- mesh.receiveShadow=true;tGrp.add(mesh);
-
- // Water
- const wg=new THREE.PlaneGeometry(TW*1.6,TH*1.6);wg.rotateX(-Math.PI/2);
- waterMesh=new THREE.Mesh(wg,new THREE.MeshPhongMaterial({color:0x081828,transparent:true,opacity:.92,shininess:60,specular:0x224466}));
- waterMesh.position.y=-.08;tGrp.add(waterMesh);
-
- // Lake Champlain
- const lg=new THREE.PlaneGeometry(1.6,9);lg.rotateX(-Math.PI/2);
- const lk=new THREE.Mesh(lg,new THREE.MeshPhongMaterial({color:0x0c2040,transparent:true,opacity:.95,shininess:80,specular:0x336688}));
- lk.position.set(-5.9,.02,1.5);tGrp.add(lk);
-
- // VT border glow outline
- const bPts=VB.map(([x,z])=>new THREE.Vector3((x-.5)*TW, elev(x,z)*ES*P.elev+.08, (z-.5)*TH));
- bPts.push(bPts[0].clone());
- const bGeo=new THREE.BufferGeometry().setFromPoints(bPts);
- tGrp.add(new THREE.Line(bGeo,new THREE.LineBasicMaterial({color:0x16a34a,transparent:true,opacity:.25})));
-}
+/* ═══ TERRAIN ═══ */
+const tGrp=new THREE.Group();sc.add(tGrp);let waterMesh;
+function buildTerrain(){tGrp.clear();const vs=[],cs=[],ix=[];for(let iz=0;iz<=SZ;iz++)for(let jx=0;jx<=SX;jx++){const nx=jx/SX,nz=iz/SZ,inside=inVT(nx,nz),wx=(nx-.5)*TW,wz=(nz-.5)*TH;let y,r,g,b;if(inside){const e=elev(nx,nz);y=e*ES*P.elev;[r,g,b]=tColor(e);}else{y=-.2;r=.012;g=.02;b=.035;}vs.push(wx,y,wz);cs.push(r,g,b);}for(let iz=0;iz<SZ;iz++)for(let jx=0;jx<SX;jx++){const a=iz*(SX+1)+jx;ix.push(a,a+SX+1,a+1,a+1,a+SX+1,a+SX+2);}const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(vs,3));geo.setAttribute('color',new THREE.Float32BufferAttribute(cs,3));geo.setIndex(ix);geo.computeVertexNormals();tGrp.add(new THREE.Mesh(geo,new THREE.MeshPhongMaterial({vertexColors:true,shininess:8,specular:0x111111})));const wg=new THREE.PlaneGeometry(TW*1.6,TH*1.6);wg.rotateX(-Math.PI/2);waterMesh=new THREE.Mesh(wg,new THREE.MeshPhongMaterial({color:0x081828,transparent:true,opacity:.92,shininess:60,specular:0x224466}));waterMesh.position.y=-.08;tGrp.add(waterMesh);const lg=new THREE.PlaneGeometry(1.6,9);lg.rotateX(-Math.PI/2);const lk=new THREE.Mesh(lg,new THREE.MeshPhongMaterial({color:0x0c2040,transparent:true,opacity:.95,shininess:80,specular:0x336688}));lk.position.set(-5.9,.02,1.5);tGrp.add(lk);const bPts=VB.map(([x,z])=>new THREE.Vector3((x-.5)*TW,elev(x,z)*ES*P.elev+.08,(z-.5)*TH));bPts.push(bPts[0].clone());tGrp.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(bPts),new THREE.LineBasicMaterial({color:0x16a34a,transparent:true,opacity:.3})));}
 buildTerrain();
 
-/* ═══════════════════════════════════════════════════════════════
-   MESH NODES
-   ═══════════════════════════════════════════════════════════════ */
+/* ═══ NODES ═══ */
 const ZC=[0x16a34a,0x2563eb,0xd97706,0xdc2626,0x7c3aed,0x0891b2,0xc026d3,0x65a30d,0xea580c,0x0d9488,0x4f46e5,0xbe123c,0x15803d,0x1d4ed8,0xb45309,0x9f1239];
-let nGrp,cLines,dataParticles;
-const dataPts=[];
+const ZN=['Burlington','Stowe','Killington','Rutland','Montpelier','St. Johnsbury','Bennington','Brattleboro','Jay','Essex','Middlebury','Woodstock','Manchester','Newport','Waitsfield','Waterbury'];
+let nGrp,cLines,dataParticles;const dataPts=[];
 
 function placeNodes(){
- if(nGrp)sc.remove(nGrp); if(cLines)sc.remove(cLines); if(dataParticles)sc.remove(dataParticles);
- nGrp=new THREE.Group();nodePos=[];nodeZn=[];
- let n=0;const target=P.nodes;
- for(let tries=0;n<target&&tries<target*20;tries++){
-  const nx=Math.random(),nz=Math.random();
-  if(!inVT(nx,nz))continue;
-  const e=elev(nx,nz), wx=(nx-.5)*TW, wz=(nz-.5)*TH, y=e*ES*P.elev+.18;
-  nodePos.push(new THREE.Vector3(wx,y,wz));
-  nodeZn.push(Math.floor(nz*P.zones)%P.zones);
-  n++;
- }
- // Points
+ if(nGrp)sc.remove(nGrp);if(cLines)sc.remove(cLines);if(dataParticles)sc.remove(dataParticles);
+ nGrp=new THREE.Group();nodePos=[];nodeZn=[];simNodes=[];
+ let n=0;for(let t=0;n<P.nodes&&t<P.nodes*20;t++){const nx=Math.random(),nz=Math.random();if(!inVT(nx,nz))continue;const e=elev(nx,nz),wx=(nx-.5)*TW,wz=(nz-.5)*TH,y=e*ES*P.elev+.18;nodePos.push(new THREE.Vector3(wx,y,wz));const zi=Math.floor(nz*P.zones)%P.zones;nodeZn.push(zi);
+  simNodes.push({id:`VN-${String(n).padStart(3,'0')}`,zone:zi,zoneName:ZN[zi%ZN.length],battery:(.6+Math.random()*.4),neighbors:0,uptime:Math.floor(Math.random()*86400*30),status:Math.random()>.05?'active':Math.random()>.5?'suspect':'dead',lastSeen:Date.now()-Math.floor(Math.random()*60000)});n++;}
  const g=new THREE.BufferGeometry(),p=new Float32Array(n*3),c=new Float32Array(n*3),s=new Float32Array(n);
- for(let i=0;i<n;i++){
-  p[i*3]=nodePos[i].x;p[i*3+1]=nodePos[i].y;p[i*3+2]=nodePos[i].z;
-  const cc=new THREE.Color(ZC[nodeZn[i]%ZC.length]);
-  c[i*3]=cc.r;c[i*3+1]=cc.g;c[i*3+2]=cc.b;
-  s[i]=.22+Math.random()*.1;
- }
- g.setAttribute('position',new THREE.BufferAttribute(p,3));
- g.setAttribute('color',new THREE.BufferAttribute(c,3));
- g.setAttribute('size',new THREE.BufferAttribute(s,1));
-
- const mat=new THREE.ShaderMaterial({
-  uniforms:{uTime:{value:0}},
-  vertexShader:`attribute float size;attribute vec3 color;varying vec3 vc;uniform float uTime;
-   void main(){vc=color;vec4 mv=modelViewMatrix*vec4(position,1.);
-   gl_PointSize=size*(220./-mv.z)*(1.+.18*sin(uTime*2.5+position.x*4.+position.z*3.));
-   gl_Position=projectionMatrix*mv;}`,
-  fragmentShader:`varying vec3 vc;void main(){float d=length(gl_PointCoord-.5)*2.;if(d>1.)discard;
-   float a=smoothstep(1.,.1,d);vec3 g=vc*1.6;
-   gl_FragColor=vec4(mix(g,vc*0.8,d),a*.92);}`,
-  transparent:true,depthWrite:false,blending:THREE.AdditiveBlending
- });
- nGrp.add(new THREE.Points(g,mat));sc.add(nGrp);
- buildConns();stats();
+ for(let i=0;i<n;i++){p[i*3]=nodePos[i].x;p[i*3+1]=nodePos[i].y;p[i*3+2]=nodePos[i].z;const cc=new THREE.Color(ZC[nodeZn[i]%ZC.length]);c[i*3]=cc.r;c[i*3+1]=cc.g;c[i*3+2]=cc.b;s[i]=.22+Math.random()*.1;}
+ g.setAttribute('position',new THREE.BufferAttribute(p,3));g.setAttribute('color',new THREE.BufferAttribute(c,3));g.setAttribute('size',new THREE.BufferAttribute(s,1));
+ nGrp.add(new THREE.Points(g,new THREE.ShaderMaterial({uniforms:{uTime:{value:0}},vertexShader:`attribute float size;attribute vec3 color;varying vec3 vc;uniform float uTime;void main(){vc=color;vec4 mv=modelViewMatrix*vec4(position,1.);gl_PointSize=size*(220./-mv.z)*(1.+.18*sin(uTime*2.5+position.x*4.+position.z*3.));gl_Position=projectionMatrix*mv;}`,fragmentShader:`varying vec3 vc;void main(){float d=length(gl_PointCoord-.5)*2.;if(d>1.)discard;float a=smoothstep(1.,.1,d);gl_FragColor=vec4(vc*1.5,a*.9);}`,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending})));
+ sc.add(nGrp);buildConns();updateAllUI();
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   CONNECTIONS + DATA FLOW PARTICLES
-   ═══════════════════════════════════════════════════════════════ */
-function buildConns(){
- if(cLines)sc.remove(cLines);if(dataParticles)sc.remove(dataParticles);
- cLines=null;dataParticles=null;dataPts.length=0;
- if(!P.conn||nodePos.length===0)return;
- const rng=(P.rf/1000)*TW*.18;
- const lv=[],lc=[];linkCount=0;
- for(let i=0;i<nodePos.length;i++){for(let j=i+1;j<nodePos.length;j++){
-  const d=nodePos[i].distanceTo(nodePos[j]);
-  if(d<rng){
-   lv.push(nodePos[i].x,nodePos[i].y,nodePos[i].z,nodePos[j].x,nodePos[j].y,nodePos[j].z);
-   const a=Math.max(.15,1-d/rng);
-   lc.push(.08,.5*a,.25*a,.08,.5*a,.25*a);
-   linkCount++;
-   if(Math.random()<.08)dataPts.push({from:nodePos[i],to:nodePos[j],t:Math.random(),spd:.3+Math.random()*.5});
-  }
- }}
- if(lv.length===0)return;
- const lg=new THREE.BufferGeometry();
- lg.setAttribute('position',new THREE.Float32BufferAttribute(lv,3));
- lg.setAttribute('color',new THREE.Float32BufferAttribute(lc,3));
- cLines=new THREE.LineSegments(lg,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.3,depthWrite:false,blending:THREE.AdditiveBlending}));
- sc.add(cLines);
-
- // Data flow particles
- if(P.data&&dataPts.length>0){
-  const dg=new THREE.BufferGeometry();
-  const dp=new Float32Array(dataPts.length*3);
-  dg.setAttribute('position',new THREE.BufferAttribute(dp,3));
-  dataParticles=new THREE.Points(dg,new THREE.PointsMaterial({size:.12,color:0x40ff80,sizeAttenuation:true,transparent:true,opacity:.7,depthWrite:false,blending:THREE.AdditiveBlending}));
-  sc.add(dataParticles);
- }
- stats();
-}
+/* ═══ CONNECTIONS ═══ */
+function buildConns(){if(cLines)sc.remove(cLines);if(dataParticles)sc.remove(dataParticles);cLines=null;dataParticles=null;dataPts.length=0;if(!P.conn||!nodePos.length)return;const rng=P.rf/1000*TW*.18;const lv=[],lc=[];linkCount=0;for(let i=0;i<nodePos.length;i++){let nc=0;for(let j=i+1;j<nodePos.length;j++){const d=nodePos[i].distanceTo(nodePos[j]);if(d<rng){lv.push(nodePos[i].x,nodePos[i].y,nodePos[i].z,nodePos[j].x,nodePos[j].y,nodePos[j].z);const a=Math.max(.15,1-d/rng);lc.push(.08,.5*a,.25*a,.08,.5*a,.25*a);linkCount++;nc++;if(Math.random()<.06)dataPts.push({from:nodePos[i],to:nodePos[j],t:Math.random(),spd:.3+Math.random()*.5});}};if(simNodes[i])simNodes[i].neighbors=nc;}if(!lv.length)return;const lg=new THREE.BufferGeometry();lg.setAttribute('position',new THREE.Float32BufferAttribute(lv,3));lg.setAttribute('color',new THREE.Float32BufferAttribute(lc,3));cLines=new THREE.LineSegments(lg,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.3,depthWrite:false,blending:THREE.AdditiveBlending}));sc.add(cLines);if(P.data&&dataPts.length){const dg=new THREE.BufferGeometry();dg.setAttribute('position',new THREE.BufferAttribute(new Float32Array(dataPts.length*3),3));dataParticles=new THREE.Points(dg,new THREE.PointsMaterial({size:.1,color:0x40ff80,sizeAttenuation:true,transparent:true,opacity:.6,depthWrite:false,blending:THREE.AdditiveBlending}));sc.add(dataParticles);}updateAllUI();}
 placeNodes();
 
-/* ═══════════════════════════════════════════════════════════════
-   EVENTS (VISUAL)
-   ═══════════════════════════════════════════════════════════════ */
-const evts=[];const EC={flood:0x3b82f6,pest:0xf97316,fire:0xef4444};
-const EL={flood:'Flood Event Detected',pest:'Pest Anomaly Confirmed',fire:'Fire Signature Detected'};
+/* ═══ EVENTS 3D ═══ */
+const evts3d=[];const EC={flood:0x3b82f6,pest:0xf97316,fire:0xef4444};const EL={flood:'Flood Event Detected',pest:'Pest Anomaly Confirmed',fire:'Fire Signature Detected'};
+const evtLog=[];const alertLog=[];
 
-function inject(type){
- if(nodePos.length===0)return;
- const idx=Math.floor(Math.random()*nodePos.length);
- const ctr=nodePos[idx].clone();
- evts.push({type,ctr,t0:clock.getElapsedTime(),col:new THREE.Color(EC[type]),mesh:null,mr:2.5+Math.random()*2.5});
- evtCount++;stats();
- // Status
- const el=document.getElementById('sysMsg');
- el.textContent='ALERT — '+EL[type];el.style.color='#f59e0b';
- setTimeout(()=>{el.textContent='Mesh Active — All Zones Nominal';el.style.color='';},4500);
- // Log
- const log=document.getElementById('eventLog');
- const d=new Date(),ts=d.toLocaleTimeString();
- log.innerHTML=`<div class="text-${type==='flood'?'blue':type==='pest'?'orange':'red'}-400">[${ts}] ${EL[type]} @ Zone ${nodeZn[idx]}</div>`+log.innerHTML;
- if(log.children.length>8)log.removeChild(log.lastChild);
+function inject(type){if(!nodePos.length)return;const idx=Math.floor(Math.random()*nodePos.length);const ctr=nodePos[idx].clone();
+ evts3d.push({type,ctr,t0:clock.getElapsedTime(),col:new THREE.Color(EC[type]),mesh:null,mr:2.5+Math.random()*2.5});evtCount++;
+ const ts=new Date().toLocaleTimeString(),zone=simNodes[idx]?.zoneName||'Unknown';
+ evtLog.unshift({type,msg:EL[type],zone,time:ts,conf:(.75+Math.random()*.24).toFixed(2)});if(evtLog.length>50)evtLog.pop();
+ alertLog.unshift({type,zone,time:ts,severity:type==='fire'?'Emergency':type==='flood'?'Warning':'Watch',id:`ALT-${String(evtCount).padStart(4,'0')}`});if(alertLog.length>20)alertLog.pop();
+ const el=document.getElementById('sysMsg');el.textContent='ALERT — '+EL[type]+' in '+zone;el.style.color='#f59e0b';setTimeout(()=>{el.textContent='Mesh Active — All Zones Nominal';el.style.color='';},4500);
+ updateAllUI();}
+
+function tickEvents(t){for(let i=evts3d.length-1;i>=0;i--){const ev=evts3d[i],age=t-ev.t0;if(age>5){if(ev.mesh){sc.remove(ev.mesh);ev.mesh.geometry.dispose();ev.mesh.material.dispose();}evts3d.splice(i,1);continue;}const p=age/5,r=ev.mr*p,op=(1-p)*.55;if(ev.mesh){sc.remove(ev.mesh);ev.mesh.geometry.dispose();ev.mesh.material.dispose();}const rg=new THREE.RingGeometry(Math.max(.02,r-.12),r+.06,64);rg.rotateX(-Math.PI/2);ev.mesh=new THREE.Mesh(rg,new THREE.MeshBasicMaterial({color:ev.col,transparent:true,opacity:op,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));ev.mesh.position.copy(ev.ctr);ev.mesh.position.y+=.08;sc.add(ev.mesh);}}
+
+/* ═══ SIMULATED GOVERNANCE ═══ */
+const proposals=[
+ {id:'PROP-001',title:'Increase monitoring frequency to 15s intervals',zone:'Stowe',yes:34,no:8,abstain:3,status:'Active',deadline:'2026-04-01'},
+ {id:'PROP-002',title:'Deploy 20 additional nodes in flood-prone Zone 3',zone:'Killington',yes:41,no:2,abstain:1,status:'Active',deadline:'2026-03-28'},
+ {id:'PROP-003',title:'Firmware update v2.1 — improved CSI sensitivity',zone:'All Zones',yes:38,no:5,abstain:0,status:'Active',deadline:'2026-04-05'},
+ {id:'PROP-004',title:'Emergency flood response protocol activation',zone:'Burlington',yes:29,no:0,abstain:2,status:'Passed',deadline:'2026-03-15'},
+];
+
+/* ═══ LEFT SIDEBAR RENDERING ═══ */
+function renderNodeList(){
+ const el=document.getElementById('nodeList');if(!el)return;
+ const sorted=[...simNodes].sort((a,b)=>a.status==='dead'?1:b.status==='dead'?-1:0);
+ el.innerHTML=sorted.slice(0,40).map(n=>{
+  const sc=n.status==='active'?'emerald':n.status==='suspect'?'yellow':'red';
+  const bat=Math.round(n.battery*100);const batC=bat>50?'emerald':bat>20?'yellow':'red';
+  const ago=Math.round((Date.now()-n.lastSeen)/1000);
+  return `<div class="node-row flex items-center gap-2 px-2 py-1.5 rounded text-[10px]">
+   <div class="w-1.5 h-1.5 rounded-full bg-${sc}-500 shrink-0"></div>
+   <span class="mono text-white w-16 shrink-0">${n.id}</span>
+   <span class="text-neutral-500 w-16 truncate">${n.zoneName}</span>
+   <span class="text-${batC}-400 mono w-8 text-right">${bat}%</span>
+   <span class="text-neutral-600 mono ml-auto">${ago}s</span>
+  </div>`;}).join('');
+ document.getElementById('nodeTotal').textContent=`${simNodes.filter(n=>n.status==='active').length} online`;
 }
 
-function tickEvents(t){
- for(let i=evts.length-1;i>=0;i--){
-  const ev=evts[i],age=t-ev.t0;
-  if(age>5){if(ev.mesh){sc.remove(ev.mesh);ev.mesh.geometry.dispose();ev.mesh.material.dispose();}evts.splice(i,1);continue;}
-  const p=age/5,r=ev.mr*p,op=(1-p)*.55;
-  if(ev.mesh){sc.remove(ev.mesh);ev.mesh.geometry.dispose();ev.mesh.material.dispose();}
-  const rg=new THREE.RingGeometry(Math.max(.02,r-.12),r+.06,64);rg.rotateX(-Math.PI/2);
-  ev.mesh=new THREE.Mesh(rg,new THREE.MeshBasicMaterial({color:ev.col,transparent:true,opacity:op,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));
-  ev.mesh.position.copy(ev.ctr);ev.mesh.position.y+=.08;sc.add(ev.mesh);
- }
+function renderEventTimeline(){
+ const el=document.getElementById('evtTimeline');if(!el)return;
+ const icons={flood:'lucide:droplets',pest:'lucide:bug',fire:'lucide:flame'};
+ const cols={flood:'blue',pest:'orange',fire:'red'};
+ el.innerHTML=evtLog.slice(0,25).map(e=>`<div class="flex items-start gap-2 px-2 py-1.5 rounded bg-${cols[e.type]}-500/5 border border-${cols[e.type]}-500/10">
+  <iconify-icon icon="${icons[e.type]}" width="12" class="text-${cols[e.type]}-400 mt-0.5 shrink-0"></iconify-icon>
+  <div class="min-w-0"><div class="text-[10px] text-white truncate">${e.msg}</div><div class="text-[9px] text-neutral-500">${e.zone} · ${e.time} · Conf: ${e.conf}</div></div>
+ </div>`).join('');
+ if(!evtLog.length)el.innerHTML='<div class="text-[10px] text-neutral-600 text-center py-4">No events yet. Inject one from the Controls panel.</div>';
+ document.getElementById('evtTotal').textContent=`${evtCount} confirmed`;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   SIMULATED LIVE DATA
-   ═══════════════════════════════════════════════════════════════ */
-let lastAutoEvt=0;
+function renderGovernance(){
+ const el=document.getElementById('govList');if(!el)return;
+ el.innerHTML=proposals.map(p=>{const total=p.yes+p.no+p.abstain;const pct=total?Math.round(p.yes/total*100):0;
+  return `<div class="bg-white/[.03] rounded-lg p-2.5 space-y-2">
+   <div class="flex items-start justify-between gap-2"><span class="text-[10px] text-white leading-tight">${p.title}</span><span class="text-[9px] mono ${p.status==='Passed'?'text-emerald-400':'text-amber-400'} shrink-0">${p.status}</span></div>
+   <div class="text-[9px] text-neutral-500">${p.id} · ${p.zone} · Deadline: ${p.deadline}</div>
+   <div class="flex gap-1 items-center"><div class="flex-1 bg-white/5 rounded-full h-1.5 overflow-hidden"><div class="bar bg-emerald-500 h-full" style="width:${pct}%"></div></div><span class="text-[9px] mono text-emerald-400 w-8 text-right">${pct}%</span></div>
+   <div class="flex gap-3 text-[9px] mono"><span class="text-emerald-400">${p.yes} yes</span><span class="text-red-400">${p.no} no</span><span class="text-neutral-500">${p.abstain} abstain</span><span class="text-neutral-600 ml-auto">${total} votes</span></div>
+  </div>`;}).join('');
+}
+
+function renderSensors(){
+ const el=document.getElementById('sensorGrid');if(!el)return;
+ const zones=[];for(let i=0;i<Math.min(P.zones,6);i++){const name=ZN[i%ZN.length];
+  zones.push({name,temp:(-5+Math.random()*25).toFixed(1),hum:(40+Math.random()*50).toFixed(0),soil:(20+Math.random()*70).toFixed(0),press:(1008+Math.random()*20).toFixed(0)});}
+ el.innerHTML=zones.map(z=>`<div class="bg-white/[.03] rounded-lg p-2.5">
+  <div class="text-[10px] text-white font-medium mb-1.5">${z.name}</div>
+  <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-[9px]">
+   <div class="flex justify-between"><span class="text-neutral-500">Temp</span><span class="mono text-sky-400">${z.temp}°C</span></div>
+   <div class="flex justify-between"><span class="text-neutral-500">Humidity</span><span class="mono text-blue-400">${z.hum}%</span></div>
+   <div class="flex justify-between"><span class="text-neutral-500">Soil</span><span class="mono text-emerald-400">${z.soil}%</span></div>
+   <div class="flex justify-between"><span class="text-neutral-500">Pressure</span><span class="mono text-purple-400">${z.press} hPa</span></div>
+  </div></div>`).join('');
+}
+
+function renderAlerts(){
+ const el=document.getElementById('alertList');if(!el)return;
+ const sevC={Emergency:'red',Warning:'amber',Watch:'yellow'};
+ el.innerHTML=alertLog.slice(0,15).map(a=>`<div class="flex items-center gap-2 px-2 py-1.5 rounded bg-${sevC[a.severity]}-500/8 border border-${sevC[a.severity]}-500/15">
+  <div class="w-1.5 h-1.5 rounded-full bg-${sevC[a.severity]}-500 shrink-0"></div>
+  <div class="min-w-0 flex-1"><div class="text-[10px] text-white truncate">${a.type.charAt(0).toUpperCase()+a.type.slice(1)} — ${a.zone}</div><div class="text-[9px] text-neutral-500">${a.id} · ${a.severity} · ${a.time}</div></div>
+  <button class="text-[9px] text-neutral-500 hover:text-white shrink-0">Dismiss</button>
+ </div>`).join('');
+ if(!alertLog.length)el.innerHTML='<div class="text-[10px] text-neutral-600 text-center py-4">No active alerts.</div>';
+ document.getElementById('alertCount').textContent=`${alertLog.length} active`;
+}
+
+function updateAllUI(){
+ document.getElementById('stN').textContent=P.nodes;document.getElementById('stL').textContent=linkCount.toLocaleString();document.getElementById('stE').textContent=evtCount;
+ renderNodeList();renderEventTimeline();renderGovernance();renderSensors();renderAlerts();
+}
+
+/* ═══ TABS ═══ */
+document.querySelectorAll('.tab').forEach(tab=>{tab.addEventListener('click',()=>{
+ document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));tab.classList.add('active');
+ ['nodes','events','gov','sensors','alerts'].forEach(id=>{const el=document.getElementById('tab_'+id);if(el)el.classList.toggle('hidden',tab.dataset.tab!==id);});
+});});
+
+/* ═══ LIVE SIM ═══ */
+let lastAutoEvt=0,lastSensorUpdate=0;
 function simLive(t){
- // Auto events every 8-15s
- if(t-lastAutoEvt>8+Math.random()*7){
-  lastAutoEvt=t;
-  const types=['flood','pest','fire'];
-  inject(types[Math.floor(Math.random()*3)]);
- }
- // Animate data flow particles
- if(dataParticles&&P.data){
-  const arr=dataParticles.geometry.attributes.position.array;
-  for(let i=0;i<dataPts.length;i++){
-   const dp=dataPts[i];
-   dp.t+=dp.spd*.016;if(dp.t>1)dp.t-=1;
-   const v=new THREE.Vector3().lerpVectors(dp.from,dp.to,dp.t);
-   arr[i*3]=v.x;arr[i*3+1]=v.y+.05;arr[i*3+2]=v.z;
-  }
-  dataParticles.geometry.attributes.position.needsUpdate=true;
- }
- // PDR jitter
- if(Math.floor(t)%3===0)document.getElementById('stP').textContent=(94+Math.random()*5).toFixed(0)+'%';
+ if(t-lastAutoEvt>8+Math.random()*7){lastAutoEvt=t;inject(['flood','pest','fire'][Math.floor(Math.random()*3)]);}
+ if(dataParticles&&P.data){const arr=dataParticles.geometry.attributes.position.array;for(let i=0;i<dataPts.length;i++){const dp=dataPts[i];dp.t+=dp.spd*.016;if(dp.t>1)dp.t-=1;const v=new THREE.Vector3().lerpVectors(dp.from,dp.to,dp.t);arr[i*3]=v.x;arr[i*3+1]=v.y+.05;arr[i*3+2]=v.z;}dataParticles.geometry.attributes.position.needsUpdate=true;}
+ if(t-lastSensorUpdate>3){lastSensorUpdate=t;document.getElementById('stP').textContent=(94+Math.random()*5).toFixed(0)+'%';
+  simNodes.forEach(n=>{n.lastSeen=Date.now()-Math.floor(Math.random()*30000);n.battery=Math.max(.05,n.battery-(Math.random()-.48)*.002);});
+  if(proposals[0].status==='Active'&&Math.random()<.3){const p=proposals[Math.floor(Math.random()*3)];p.yes+=Math.floor(Math.random()*3);p.no+=Math.random()<.2?1:0;}
+  renderNodeList();renderSensors();renderGovernance();}
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   STATS
-   ═══════════════════════════════════════════════════════════════ */
-function stats(){
- document.getElementById('stN').textContent=P.nodes;
- document.getElementById('stL').textContent=linkCount.toLocaleString();
- document.getElementById('stE').textContent=evtCount;
-}
+/* ═══ UI BINDING ═══ */
+function sl(id,vId,key,suf,cb){const e=document.getElementById(id),v=document.getElementById(vId);if(!e)return;e.oninput=()=>{P[key]=parseFloat(e.value);if(v)v.textContent=e.value+(suf||'');if(cb)cb();};}
+sl('s_n','v_n','nodes','',placeNodes);sl('s_r','v_r','rf','m',buildConns);sl('s_z','v_z','zones','',placeNodes);sl('s_e','v_e','elev','x',()=>{buildTerrain();placeNodes();});
+document.getElementById('cC').onchange=e=>{P.conn=e.target.checked;buildConns();};
+document.getElementById('cR').onchange=e=>{ctl.autoRotate=e.target.checked;};
+document.getElementById('cD').onchange=e=>{P.data=e.target.checked;};
+document.getElementById('bF').onclick=()=>inject('flood');document.getElementById('bP').onclick=()=>inject('pest');document.getElementById('bR').onclick=()=>inject('fire');
 
-/* ═══════════════════════════════════════════════════════════════
-   UI BINDING
-   ═══════════════════════════════════════════════════════════════ */
-function sl(id,vId,key,cb){const e=document.getElementById(id),v=document.getElementById(vId);
- if(!e)return;e.oninput=()=>{P[key]=parseFloat(e.value);if(v)v.textContent=e.value;if(cb)cb();};}
+let curView='overview',flying=false,flyT=0;const fS=new THREE.Vector3(),fE=new THREE.Vector3(),fST=new THREE.Vector3(),fET=new THREE.Vector3();
+document.getElementById('warpBtn').onclick=()=>{if(flying)return;flying=true;flyT=0;fS.copy(cam.position);fST.copy(ctl.target);if(curView==='overview'){curView='mtn';fE.set(-1,6,1);fET.set(-1,1.5,-2);document.getElementById('wT').textContent='Return to Overview';document.getElementById('wI').setAttribute('icon','lucide:maximize-2');}else{curView='overview';fE.set(2,20,26);fET.set(0,0,-2);document.getElementById('wT').textContent='Fly to Green Mountains';document.getElementById('wI').setAttribute('icon','lucide:mountain-snow');}ctl.enabled=false;};
+document.getElementById('resetBtn').onclick=()=>{P.nodes=200;P.rf=800;P.zones=8;P.elev=1;P.conn=true;P.rot=true;P.data=true;document.getElementById('s_n').value=200;document.getElementById('v_n').textContent='200';document.getElementById('s_r').value=800;document.getElementById('v_r').textContent='800m';document.getElementById('s_z').value=8;document.getElementById('v_z').textContent='8';document.getElementById('s_e').value='1.0';document.getElementById('v_e').textContent='1.0x';document.getElementById('cC').checked=true;document.getElementById('cR').checked=true;document.getElementById('cD').checked=true;ctl.autoRotate=true;buildTerrain();placeNodes();cam.position.set(2,20,26);ctl.target.set(0,0,-2);curView='overview';document.getElementById('wT').textContent='Fly to Green Mountains';};
 
-sl('s_nodes','v_nodes','nodes',placeNodes);
-sl('s_rf','v_rf','rf',buildConns);
-sl('s_zones','v_zones','zones',placeNodes);
-sl('s_elev','v_elev','elev',()=>{buildTerrain();placeNodes();});
-
-document.getElementById('cConn').onchange=e=>{P.conn=e.target.checked;buildConns();};
-document.getElementById('cRot').onchange=e=>{ctl.autoRotate=e.target.checked;};
-document.getElementById('cData').onchange=e=>{P.data=e.target.checked;};
-document.getElementById('bFlood').onclick=()=>inject('flood');
-document.getElementById('bPest').onclick=()=>inject('pest');
-document.getElementById('bFire').onclick=()=>inject('fire');
-
-// Navigation
-let curView='overview',flying=false,flyT=0;
-const fS=new THREE.Vector3(),fE=new THREE.Vector3(),fST=new THREE.Vector3(),fET=new THREE.Vector3();
-document.getElementById('warpBtn').onclick=()=>{
- if(flying)return;flying=true;flyT=0;
- fS.copy(cam.position);fST.copy(ctl.target);
- if(curView==='overview'){curView='mtn';fE.set(-1,6,1);fET.set(-1,1.5,-2);
-  document.getElementById('warpTxt').textContent='Return to Overview';
-  document.getElementById('warpIco').setAttribute('icon','lucide:maximize-2');
- }else{curView='overview';fE.set(2,20,26);fET.set(0,0,-2);
-  document.getElementById('warpTxt').textContent='Fly to Green Mountains';
-  document.getElementById('warpIco').setAttribute('icon','lucide:mountain-snow');
- }
- ctl.enabled=false;
-};
-
-document.getElementById('resetBtn').onclick=()=>{
- P.nodes=200;P.rf=800;P.zones=8;P.elev=1;P.conn=true;P.rot=true;P.data=true;
- document.getElementById('s_nodes').value=200;document.getElementById('v_nodes').textContent='200';
- document.getElementById('s_rf').value=800;document.getElementById('v_rf').textContent='800';
- document.getElementById('s_zones').value=8;document.getElementById('v_zones').textContent='8';
- document.getElementById('s_elev').value='1.0';document.getElementById('v_elev').textContent='1.0';
- document.getElementById('cConn').checked=true;document.getElementById('cRot').checked=true;document.getElementById('cData').checked=true;
- ctl.autoRotate=true;buildTerrain();placeNodes();
- cam.position.set(2,20,26);ctl.target.set(0,0,-2);curView='overview';
- document.getElementById('warpTxt').textContent='Fly to Green Mountains';
- document.getElementById('warpIco').setAttribute('icon','lucide:mountain-snow');
-};
-
-/* ═══════════════════════════════════════════════════════════════
-   RESIZE
-   ═══════════════════════════════════════════════════════════════ */
 onresize=()=>{sz.w=innerWidth;sz.h=innerHeight;cam.aspect=sz.w/sz.h;cam.updateProjectionMatrix();ren.setSize(sz.w,sz.h);ren.setPixelRatio(Math.min(devicePixelRatio,2));};
 
-/* ═══════════════════════════════════════════════════════════════
-   RENDER LOOP
-   ═══════════════════════════════════════════════════════════════ */
-const clock=new THREE.Clock();
-setTimeout(()=>document.getElementById('loading').classList.add('hide'),600);
-
-(function tick(){
- const dt=clock.getDelta(),t=clock.getElapsedTime();
-
- if(flying){flyT+=dt/2.2;const s=flyT*flyT*(3-2*flyT);
-  cam.position.lerpVectors(fS,fE,Math.min(s,1));
-  ctl.target.lerpVectors(fST,fET,Math.min(s,1));
-  if(flyT>=1){flying=false;ctl.enabled=true;}
- }else{ctl.update();}
-
- // Shader time
+/* ═══ RENDER LOOP ═══ */
+const clock=new THREE.Clock();setTimeout(()=>document.getElementById('loading').classList.add('done'),700);
+(function tick(){const dt=clock.getDelta(),t=clock.getElapsedTime();
+ if(flying){flyT+=dt/2.2;const s=Math.min(flyT,1);const sm=s*s*(3-2*s);cam.position.lerpVectors(fS,fE,sm);ctl.target.lerpVectors(fST,fET,sm);if(flyT>=1){flying=false;ctl.enabled=true;}}else ctl.update();
  if(nGrp?.children[0])nGrp.children[0].material.uniforms.uTime.value=t;
- // Water
  if(waterMesh)waterMesh.position.y=-.08+Math.sin(t*.4)*.025;
- // Events
- tickEvents(t);
- // Live sim
- simLive(t);
- // Camera info
- const cp=document.getElementById('camPos');
- if(cp){const{x,y,z}=cam.position;cp.textContent=`CAM ${x.toFixed(0)}, ${y.toFixed(0)}, ${z.toFixed(0)}`;}
-
- ren.render(sc,cam);requestAnimationFrame(tick);
-})();
+ tickEvents(t);simLive(t);
+ const cp=document.getElementById('camPos');if(cp){const{x,y,z}=cam.position;cp.textContent=`${x.toFixed(0)}, ${y.toFixed(0)}, ${z.toFixed(0)}`;}
+ ren.render(sc,cam);requestAnimationFrame(tick);})();
 </script>
 </body></html>
