@@ -1,0 +1,16 @@
+# Build artifacts
+target/
+ui/dist/
+ui/node_modules/
+ui/tsconfig.tsbuildinfo
+
+# IDE
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
