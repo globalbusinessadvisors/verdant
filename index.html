@@ -9,741 +9,502 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
 <script type="importmap">
-{
-"imports": {
+{ "imports": {
 "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
 "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-}
-}
+}}
 </script>
 <style>
-body { font-family:'Inter',sans-serif; background:#050505; overflow:hidden; margin:0; }
-::-webkit-scrollbar { width:4px; }
-::-webkit-scrollbar-track { background:transparent; }
-::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:2px; }
-::-webkit-scrollbar-thumb:hover { background:rgba(255,255,255,0.2); }
-input[type=range] { -webkit-appearance:none; width:100%; background:transparent; }
-input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance:none; height:14px; width:14px; border-radius:50%;
-  background:#e5e5e5; cursor:pointer; margin-top:-6px;
-  box-shadow:0 0 0 1px rgba(0,0,0,0.5),0 2px 4px rgba(0,0,0,0.2);
-  border:1px solid rgba(0,0,0,0.1); transition:transform 0.1s ease;
-}
-input[type=range]::-webkit-slider-thumb:hover { transform:scale(1.1); background:#fff; }
-input[type=range]::-webkit-slider-runnable-track { width:100%; height:2px; cursor:pointer; background:rgba(255,255,255,0.15); border-radius:1px; }
-input[type=range]:focus { outline:none; }
-.custom-checkbox {
-  appearance:none; background-color:rgba(255,255,255,0.05);
-  border:1px solid rgba(255,255,255,0.15); border-radius:4px;
-  display:grid; place-content:center; transition:all 0.2s;
-}
-.custom-checkbox::before {
-  content:""; width:8px; height:8px; transform:scale(0);
-  transition:120ms transform ease-in-out; box-shadow:inset 1em 1em white;
-  transform-origin:center; clip-path:polygon(14% 44%,0 65%,50% 100%,100% 16%,80% 0%,43% 62%);
-}
-.custom-checkbox:checked { background-color:#16a34a; border-color:#16a34a; }
-.custom-checkbox:checked::before { transform:scale(1); }
-canvas { display:block; outline:none; }
-.event-btn { transition:all 0.15s; }
-.event-btn:active { transform:scale(0.95); }
-@keyframes pulse-ring { 0%{box-shadow:0 0 0 0 rgba(22,163,74,0.4)} 70%{box-shadow:0 0 0 6px rgba(22,163,74,0)} 100%{box-shadow:0 0 0 0 rgba(22,163,74,0)} }
-.pulse-dot { animation: pulse-ring 2s infinite; }
+*{box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#030708;overflow:hidden;margin:0}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
+input[type=range]{-webkit-appearance:none;width:100%;background:transparent}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;height:14px;width:14px;border-radius:50%;background:#e5e5e5;cursor:pointer;margin-top:-6px;box-shadow:0 0 0 1px rgba(0,0,0,.5);border:1px solid rgba(0,0,0,.1);transition:transform .1s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.15);background:#fff}
+input[type=range]::-webkit-slider-runnable-track{width:100%;height:2px;cursor:pointer;background:rgba(255,255,255,.15);border-radius:1px}
+input[type=range]:focus{outline:none}
+.ck{appearance:none;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);border-radius:4px;display:grid;place-content:center;transition:all .2s}
+.ck::before{content:"";width:8px;height:8px;transform:scale(0);transition:120ms transform ease-in-out;box-shadow:inset 1em 1em white;transform-origin:center;clip-path:polygon(14% 44%,0 65%,50% 100%,100% 16%,80% 0%,43% 62%)}
+.ck:checked{background:#16a34a;border-color:#16a34a}.ck:checked::before{transform:scale(1)}
+canvas{display:block;outline:none}
+.ev-btn{transition:all .15s}.ev-btn:active{transform:scale(.95)}
+@keyframes pr{0%{box-shadow:0 0 0 0 rgba(22,163,74,.4)}70%{box-shadow:0 0 0 6px rgba(22,163,74,0)}100%{box-shadow:0 0 0 0 rgba(22,163,74,0)}}
+.pd{animation:pr 2s infinite}
+#loading{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:#030708;color:#16a34a;font-size:14px;gap:8px;transition:opacity .6s}
+#loading.hide{opacity:0;pointer-events:none}
 </style></head>
-<body class="text-neutral-400 selection:bg-neutral-800 selection:text-white">
+<body class="text-neutral-400">
 
-<canvas id="webgl" class="fixed inset-0 z-0 bg-black"></canvas>
+<div id="loading"><iconify-icon icon="lucide:loader-2" width="20" class="animate-spin"></iconify-icon>Initializing mesh...</div>
+<canvas id="c"></canvas>
 
 <div class="fixed inset-0 pointer-events-none z-10 flex flex-col justify-between p-5">
-  <header class="flex items-start justify-between">
-    <div class="flex flex-col gap-1 pointer-events-auto">
-      <div class="flex items-center gap-2.5 text-white">
-        <iconify-icon icon="lucide:trees" width="22" class="text-emerald-500"></iconify-icon>
-        <h1 class="text-lg font-semibold tracking-tight">Verdant</h1>
-        <span class="text-[10px] font-medium bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20">LIVE</span>
-      </div>
-      <p class="text-[11px] text-neutral-500 font-light tracking-wide ml-[34px]">Vermont Forest Mesh Intelligence</p>
-    </div>
+ <header class="flex items-start justify-between gap-4">
+  <div class="flex flex-col gap-1 pointer-events-auto shrink-0">
+   <div class="flex items-center gap-2.5 text-white">
+    <iconify-icon icon="lucide:trees" width="22" class="text-emerald-500"></iconify-icon>
+    <h1 class="text-lg font-semibold tracking-tight">Verdant</h1>
+    <span class="text-[10px] font-medium bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20" id="liveBadge">LIVE</span>
+   </div>
+   <p class="text-[11px] text-neutral-500 font-light tracking-wide ml-[34px]">Vermont Forest Mesh Intelligence</p>
+  </div>
+  <aside id="panel" class="w-80 bg-neutral-900/85 backdrop-blur-xl border border-white/[.08] rounded-xl shadow-2xl overflow-hidden pointer-events-auto flex flex-col max-h-[92vh]">
+   <div class="px-5 py-3 border-b border-white/5 flex items-center justify-between shrink-0">
+    <span class="text-[11px] font-semibold text-neutral-300 uppercase tracking-wider">Control Panel</span>
+    <button id="resetBtn" class="text-[11px] text-neutral-500 hover:text-white transition-colors flex items-center gap-1"><iconify-icon icon="lucide:rotate-ccw" width="11"></iconify-icon>Reset</button>
+   </div>
+   <div class="p-4 overflow-y-auto flex flex-col gap-4">
 
-    <aside class="w-80 bg-neutral-900/80 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden pointer-events-auto flex flex-col max-h-[92vh]">
-      <div class="px-5 py-3.5 border-b border-white/5 flex items-center justify-between shrink-0">
-        <span class="text-xs font-medium text-neutral-300 uppercase tracking-wider">Control Panel</span>
-        <button id="resetBtn" class="text-xs text-neutral-500 hover:text-white transition-colors flex items-center gap-1">
-          <iconify-icon icon="lucide:rotate-ccw" width="12"></iconify-icon> Reset
-        </button>
-      </div>
+    <!-- MESH -->
+    <section class="space-y-2.5">
+     <div class="flex items-center gap-2 text-neutral-200 text-[11px] font-semibold"><iconify-icon icon="lucide:radio-tower" width="13" class="text-emerald-400"></iconify-icon>Mesh Network</div>
+     <label class="space-y-1 block"><span class="flex justify-between text-[11px]"><span>Sensor Nodes</span><span id="v_nodes" class="text-white font-mono">200</span></span><input type="range" id="s_nodes" min="50" max="500" step="10" value="200"></label>
+     <label class="space-y-1 block"><span class="flex justify-between text-[11px]"><span>RF Range (m)</span><span id="v_rf" class="text-white font-mono">800</span></span><input type="range" id="s_rf" min="200" max="2000" step="50" value="800"></label>
+     <label class="space-y-1 block"><span class="flex justify-between text-[11px]"><span>Zones</span><span id="v_zones" class="text-white font-mono">8</span></span><input type="range" id="s_zones" min="3" max="16" step="1" value="8"></label>
+    </section>
 
-      <div class="p-5 overflow-y-auto flex flex-col gap-5 custom-scrollbar">
-        <!-- Network -->
-        <div class="space-y-3">
-          <div class="flex items-center gap-2 text-neutral-200 text-xs font-medium">
-            <iconify-icon icon="lucide:radio-tower" width="14" class="text-emerald-400"></iconify-icon> Mesh Network
-          </div>
-          <div class="space-y-1.5">
-            <div class="flex justify-between text-xs"><span>Sensor Nodes</span><span id="nodeCountVal" class="text-white font-mono">200</span></div>
-            <input type="range" id="nodeCount" min="50" max="500" step="10" value="200">
-          </div>
-          <div class="space-y-1.5">
-            <div class="flex justify-between text-xs"><span>RF Range (m)</span><span id="rfRangeVal" class="text-white font-mono">800</span></div>
-            <input type="range" id="rfRange" min="200" max="2000" step="50" value="800">
-          </div>
-          <div class="space-y-1.5">
-            <div class="flex justify-between text-xs"><span>Zones</span><span id="zoneCountVal" class="text-white font-mono">8</span></div>
-            <input type="range" id="zoneCount" min="3" max="16" step="1" value="8">
-          </div>
-        </div>
+    <hr class="border-white/5">
 
-        <div class="h-px bg-white/5 w-full"></div>
+    <!-- TERRAIN -->
+    <section class="space-y-2.5">
+     <div class="flex items-center gap-2 text-neutral-200 text-[11px] font-semibold"><iconify-icon icon="lucide:mountain" width="13" class="text-sky-400"></iconify-icon>Terrain</div>
+     <label class="space-y-1 block"><span class="flex justify-between text-[11px]"><span>Elevation</span><span id="v_elev" class="text-white font-mono">1.0</span></span><input type="range" id="s_elev" min="0.3" max="3" step="0.1" value="1.0"></label>
+    </section>
 
-        <!-- Terrain -->
-        <div class="space-y-3">
-          <div class="flex items-center gap-2 text-neutral-200 text-xs font-medium">
-            <iconify-icon icon="lucide:mountain" width="14" class="text-sky-400"></iconify-icon> Terrain
-          </div>
-          <div class="space-y-1.5">
-            <div class="flex justify-between text-xs"><span>Elevation Scale</span><span id="elevScaleVal" class="text-white font-mono">1.0</span></div>
-            <input type="range" id="elevScale" min="0.2" max="3.0" step="0.1" value="1.0">
-          </div>
-          <div class="space-y-1.5">
-            <div class="flex justify-between text-xs"><span>Detail</span><span id="detailVal" class="text-white font-mono">1.0</span></div>
-            <input type="range" id="detail" min="0" max="2" step="0.1" value="1.0">
-          </div>
-        </div>
+    <hr class="border-white/5">
 
-        <div class="h-px bg-white/5 w-full"></div>
+    <!-- EVENTS -->
+    <section class="space-y-2.5">
+     <div class="flex items-center gap-2 text-neutral-200 text-[11px] font-semibold"><iconify-icon icon="lucide:zap" width="13" class="text-amber-400"></iconify-icon>Simulate Event</div>
+     <div class="grid grid-cols-3 gap-2">
+      <button id="bFlood" class="ev-btn py-2 rounded-lg text-[10px] font-semibold bg-blue-500/15 text-blue-400 border border-blue-500/20 hover:bg-blue-500/30"><iconify-icon icon="lucide:droplets" width="14" class="block mx-auto mb-1"></iconify-icon>Flood</button>
+      <button id="bPest" class="ev-btn py-2 rounded-lg text-[10px] font-semibold bg-orange-500/15 text-orange-400 border border-orange-500/20 hover:bg-orange-500/30"><iconify-icon icon="lucide:bug" width="14" class="block mx-auto mb-1"></iconify-icon>Pest</button>
+      <button id="bFire" class="ev-btn py-2 rounded-lg text-[10px] font-semibold bg-red-500/15 text-red-400 border border-red-500/20 hover:bg-red-500/30"><iconify-icon icon="lucide:flame" width="14" class="block mx-auto mb-1"></iconify-icon>Fire</button>
+     </div>
+    </section>
 
-        <!-- Simulation Events -->
-        <div class="space-y-3">
-          <div class="flex items-center gap-2 text-neutral-200 text-xs font-medium">
-            <iconify-icon icon="lucide:zap" width="14" class="text-amber-400"></iconify-icon> Simulate Event
-          </div>
-          <div class="grid grid-cols-3 gap-2">
-            <button id="injectFlood" class="event-btn py-2 rounded-lg text-[11px] font-medium bg-blue-500/15 text-blue-400 border border-blue-500/20 hover:bg-blue-500/25">
-              <iconify-icon icon="lucide:droplets" width="14" class="block mx-auto mb-1"></iconify-icon>Flood
-            </button>
-            <button id="injectPest" class="event-btn py-2 rounded-lg text-[11px] font-medium bg-orange-500/15 text-orange-400 border border-orange-500/20 hover:bg-orange-500/25">
-              <iconify-icon icon="lucide:bug" width="14" class="block mx-auto mb-1"></iconify-icon>Pest
-            </button>
-            <button id="injectFire" class="event-btn py-2 rounded-lg text-[11px] font-medium bg-red-500/15 text-red-400 border border-red-500/20 hover:bg-red-500/25">
-              <iconify-icon icon="lucide:flame" width="14" class="block mx-auto mb-1"></iconify-icon>Fire
-            </button>
-          </div>
-        </div>
+    <hr class="border-white/5">
 
-        <div class="h-px bg-white/5 w-full"></div>
+    <!-- DISPLAY -->
+    <section class="space-y-2">
+     <div class="flex items-center gap-2 text-neutral-200 text-[11px] font-semibold"><iconify-icon icon="lucide:eye" width="13"></iconify-icon>Display</div>
+     <div class="flex items-center justify-between"><label for="cConn" class="text-[11px] cursor-pointer">Mesh Links</label><input type="checkbox" id="cConn" class="ck w-4 h-4 cursor-pointer" checked></div>
+     <div class="flex items-center justify-between"><label for="cRot" class="text-[11px] cursor-pointer">Auto Rotate</label><input type="checkbox" id="cRot" class="ck w-4 h-4 cursor-pointer" checked></div>
+     <div class="flex items-center justify-between"><label for="cData" class="text-[11px] cursor-pointer">Live Data Flow</label><input type="checkbox" id="cData" class="ck w-4 h-4 cursor-pointer" checked></div>
+    </section>
 
-        <!-- Toggles -->
-        <div class="space-y-3">
-          <div class="flex items-center gap-2 text-neutral-200 text-xs font-medium">
-            <iconify-icon icon="lucide:eye" width="14" class="text-neutral-400"></iconify-icon> Display
-          </div>
-          <div class="flex items-center justify-between">
-            <label for="showConnections" class="text-xs cursor-pointer">Mesh Connections</label>
-            <input type="checkbox" id="showConnections" class="custom-checkbox w-4 h-4 cursor-pointer" checked>
-          </div>
-          <div class="flex items-center justify-between">
-            <label for="showLabels" class="text-xs cursor-pointer">Zone Labels</label>
-            <input type="checkbox" id="showLabels" class="custom-checkbox w-4 h-4 cursor-pointer" checked>
-          </div>
-          <div class="flex items-center justify-between">
-            <label for="autoRotate" class="text-xs cursor-pointer">Auto Rotate</label>
-            <input type="checkbox" id="autoRotate" class="custom-checkbox w-4 h-4 cursor-pointer" checked>
-          </div>
-        </div>
+    <hr class="border-white/5">
 
-        <div class="h-px bg-white/5 w-full"></div>
+    <!-- STATS -->
+    <section class="space-y-2.5">
+     <div class="flex items-center gap-2 text-neutral-200 text-[11px] font-semibold"><iconify-icon icon="lucide:activity" width="13" class="text-emerald-400"></iconify-icon>Network Health</div>
+     <div class="grid grid-cols-2 gap-2">
+      <div class="bg-white/5 rounded-lg p-2"><div class="text-[9px] text-neutral-500">Active Nodes</div><div id="stN" class="text-sm font-mono text-emerald-400">200</div></div>
+      <div class="bg-white/5 rounded-lg p-2"><div class="text-[9px] text-neutral-500">Mesh Links</div><div id="stL" class="text-sm font-mono text-sky-400">0</div></div>
+      <div class="bg-white/5 rounded-lg p-2"><div class="text-[9px] text-neutral-500">Events</div><div id="stE" class="text-sm font-mono text-amber-400">0</div></div>
+      <div class="bg-white/5 rounded-lg p-2"><div class="text-[9px] text-neutral-500">Avg PDR</div><div id="stP" class="text-sm font-mono text-purple-400">97%</div></div>
+     </div>
+     <!-- Event Log -->
+     <div id="eventLog" class="text-[10px] font-mono space-y-0.5 max-h-20 overflow-y-auto"></div>
+    </section>
 
-        <!-- Stats -->
-        <div class="space-y-3">
-          <div class="flex items-center gap-2 text-neutral-200 text-xs font-medium">
-            <iconify-icon icon="lucide:activity" width="14" class="text-emerald-400"></iconify-icon> Network Health
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <div class="bg-white/5 rounded-lg p-2.5">
-              <div class="text-[10px] text-neutral-500 mb-0.5">Active Nodes</div>
-              <div id="statNodes" class="text-sm font-mono text-emerald-400">200</div>
-            </div>
-            <div class="bg-white/5 rounded-lg p-2.5">
-              <div class="text-[10px] text-neutral-500 mb-0.5">Mesh Links</div>
-              <div id="statLinks" class="text-sm font-mono text-sky-400">0</div>
-            </div>
-            <div class="bg-white/5 rounded-lg p-2.5">
-              <div class="text-[10px] text-neutral-500 mb-0.5">Events</div>
-              <div id="statEvents" class="text-sm font-mono text-amber-400">0</div>
-            </div>
-            <div class="bg-white/5 rounded-lg p-2.5">
-              <div class="text-[10px] text-neutral-500 mb-0.5">Avg PDR</div>
-              <div id="statPdr" class="text-sm font-mono text-purple-400">98%</div>
-            </div>
-          </div>
-        </div>
+    <button id="warpBtn" class="group relative w-full py-2 bg-emerald-600 text-white text-[11px] font-semibold rounded-lg hover:bg-emerald-500 transition-all overflow-hidden flex items-center justify-center gap-2 active:scale-95 mt-1">
+     <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 pointer-events-none"></div>
+     <iconify-icon id="warpIco" icon="lucide:mountain-snow" width="13"></iconify-icon>
+     <span id="warpTxt">Fly to Green Mountains</span>
+    </button>
+   </div>
+  </aside>
+ </header>
 
-        <!-- Warp Button -->
-        <button id="warpBtn" class="group relative w-full py-2.5 bg-emerald-600 text-white text-xs font-semibold rounded-lg hover:bg-emerald-500 transition-all overflow-hidden flex items-center justify-center gap-2 active:scale-95">
-          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 pointer-events-none"></div>
-          <iconify-icon id="warpIcon" icon="lucide:mountain-snow" width="14"></iconify-icon>
-          <span id="warpText">Fly to Green Mountains</span>
-        </button>
-      </div>
-    </aside>
-  </header>
-
-  <footer class="flex items-end justify-between pointer-events-none">
-    <div class="flex items-center gap-6 text-xs font-mono text-neutral-600">
-      <div class="flex items-center gap-2">
-        <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 pulse-dot"></div>
-        <span id="systemStatus">Mesh Active — All Zones Nominal</span>
-      </div>
-      <div id="cameraInfo" class="hidden sm:block">POS: 0, 15, 20</div>
-    </div>
-    <div class="flex items-center gap-4 pointer-events-auto">
-      <span class="text-[10px] text-neutral-600 font-mono">CRYSTALS-Dilithium Secured</span>
-      <a href="https://github.com/globalbusinessadvisors/verdant" target="_blank" class="text-neutral-600 hover:text-white transition-colors">
-        <iconify-icon icon="lucide:github" width="18"></iconify-icon>
-      </a>
-    </div>
-  </footer>
+ <footer class="flex items-end justify-between pointer-events-none">
+  <div class="flex items-center gap-5 text-[11px] font-mono text-neutral-600">
+   <div class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-emerald-500 pd"></div><span id="sysMsg">Mesh Active — All Zones Nominal</span></div>
+   <div id="camPos" class="hidden sm:block"></div>
+  </div>
+  <div class="flex items-center gap-4 pointer-events-auto">
+   <span class="text-[9px] text-neutral-600 font-mono tracking-wide">CRYSTALS-Dilithium Secured</span>
+   <a href="https://github.com/globalbusinessadvisors/verdant" target="_blank" class="text-neutral-600 hover:text-white transition-colors"><iconify-icon icon="lucide:github" width="16"></iconify-icon></a>
+  </div>
+ </footer>
 </div>
 
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-// ─── Config ───────────────────────────────────────────────
-const params = {
-  nodeCount: 200, rfRange: 800, zoneCount: 8,
-  elevScale: 1.0, detail: 1.0,
-  showConnections: true, showLabels: true, autoRotate: true
-};
+/* ═══════════════════════════════════════════════════════════════
+   CONFIG
+   ═══════════════════════════════════════════════════════════════ */
+const P = { nodes:200, rf:800, zones:8, elev:1, conn:true, rot:true, data:true };
+const TW=13, TH=25, SX=120, SZ=220, ES=4;
+let evtCount=0, linkCount=0, nodePos=[], nodeZn=[];
 
-const TERRAIN_W = 14, TERRAIN_H = 26;
-const SEG_X = 140, SEG_Z = 260;
-const ELEV_SCALE = 3.5;
-
-// ─── Vermont Boundary (normalized 0-1 coords) ────────────
-const VT_BOUNDARY = [
-  [0.04,0],[.50,0],[.52,.05],[.56,.13],[.60,.20],[.64,.28],[.68,.37],
-  [.72,.45],[.76,.53],[.80,.62],[.85,.70],[.90,.80],[.95,.90],[1.0,1.0],
-  [0.0,1.0],[0.0,.92],[.02,.82],[.01,.72],[.03,.62],[.05,.52],
-  [.04,.42],[.02,.32],[.03,.22],[.05,.12],[.04,0]
+/* ═══════════════════════════════════════════════════════════════
+   VERMONT BOUNDARY  (normalized [0,1] — wider at north, narrow south)
+   ═══════════════════════════════════════════════════════════════ */
+const VB=[
+ [.05,0],[.48,0],[.50,.04],[.53,.10],[.56,.16],[.59,.22],[.62,.28],[.65,.34],
+ [.68,.40],[.71,.46],[.74,.52],[.77,.58],[.80,.64],[.84,.71],[.88,.78],
+ [.92,.85],[.96,.92],[1,1],
+ [0,1],[0,.94],[.015,.86],[.005,.78],[.02,.70],[.04,.62],[.05,.54],
+ [.04,.46],[.025,.38],[.02,.30],[.03,.22],[.04,.14],[.05,.07],[.05,0]
 ];
+function inVT(x,z){let c=false;for(let i=0,j=VB.length-1;i<VB.length;j=i++){
+ const[xi,yi]=VB[i],[xj,yj]=VB[j];
+ if((yi>z)!==(yj>z)&&x<(xj-xi)*(z-yi)/(yj-yi)+xi)c=!c;}return c;}
 
-function pointInVT(nx, nz) {
-  const poly = VT_BOUNDARY;
-  let inside = false;
-  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-    const xi = poly[i][0], yi = poly[i][1];
-    const xj = poly[j][0], yj = poly[j][1];
-    if ((yi > nz) !== (yj > nz) && nx < (xj - xi) * (nz - yi) / (yj - yi) + xi) inside = !inside;
-  }
-  return inside;
+/* ═══════════════════════════════════════════════════════════════
+   NOISE
+   ═══════════════════════════════════════════════════════════════ */
+function H(a,b){let h=(a*2654435761^b*2246822519)>>>0;h=((h>>16)^h)*0x45d9f3b>>>0;return(h&0xffff)/65535;}
+function sn(x,y){const ix=Math.floor(x),iy=Math.floor(y),fx=x-ix,fy=y-iy,
+ sx=fx*fx*(3-2*fx),sy=fy*fy*(3-2*fy),
+ a=H(ix,iy),b=H(ix+1,iy),c=H(ix,iy+1),d=H(ix+1,iy+1);
+ return a+(b-a)*sx+(c-a)*sy+(a-b-c+d)*sx*sy;}
+function fbm(x,y,o){let v=0,a=.5,f=1;for(let i=0;i<o;i++){v+=a*sn(x*f,y*f);f*=2.1;a*=.48;}return v;}
+
+/* ═══════════════════════════════════════════════════════════════
+   ELEVATION & COLOR
+   ═══════════════════════════════════════════════════════════════ */
+function elev(nx,nz){
+ const rx=.42+.04*Math.sin(nz*6.3), dr=nx-rx;
+ const ridge=Math.exp(-dr*dr*45)*.72;
+ const mansfield=Math.exp(-((nx-.40)**2+(nz-.78)**2)*100)*.38;
+ const killington=Math.exp(-((nx-.50)**2+(nz-.46)**2)*90)*.30;
+ const camel=Math.exp(-((nx-.38)**2+(nz-.72)**2)*110)*.27;
+ const jay=Math.exp(-((nx-.28)**2+(nz-.93)**2)*100)*.24;
+ const stowe=Math.exp(-((nx-.36)**2+(nz-.75)**2)*80)*.18;
+ const champlain=Math.max(0,1-nx*9)*.22;
+ const ct=Math.max(0,1-(1-nx)*7)*.13*(0.4+0.6*nz);
+ const base=.14+.06*(1-2*Math.abs(nx-.43));
+ const n1=fbm(nx*10,nz*10,4)*.11;
+ const n2=fbm(nx*25+5,nz*25+5,3)*.04;
+ return Math.max(.01,base+ridge+mansfield+killington+camel+jay+stowe-champlain-ct+n1+n2);
 }
 
-// ─── Procedural Noise ─────────────────────────────────────
-function hash(x, y) { let h = x * 374761393 + y * 668265263 + 1234567; h = (h ^ (h >> 13)) * 1274126177; return ((h ^ (h >> 16)) & 0x7fffffff) / 0x7fffffff; }
-function smoothNoise(x, y) {
-  const ix = Math.floor(x), iy = Math.floor(y);
-  const fx = x - ix, fy = y - iy;
-  const sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy);
-  const a = hash(ix, iy), b = hash(ix+1, iy), c = hash(ix, iy+1), d = hash(ix+1, iy+1);
-  return a + (b-a)*sx + (c-a)*sy + (a-b-c+d)*sx*sy;
-}
-function fbm(x, y, octaves) {
-  let v = 0, a = 0.5, f = 1;
-  for (let i = 0; i < octaves; i++) { v += a * smoothNoise(x*f, y*f); f *= 2; a *= 0.5; }
-  return v;
+const CC=[[.01,.10,.05,.18,.14,.22,.25,.15,.30,.2,.12,.35,.25,.10,.42,.30,.08,.48,.33,.06,.55,.38,.12,.62,.42,.16,.72,.48,.22,.8,.55,.3,.88,.62,.38,.95,.7,.55,1,.78,.66]];
+function tColor(e){
+ const t=Math.min(e/.95,1);
+ const r=.06+t*.55, g=.14+t*.42, b=.08+t*.32;
+ const v=(H(e*1000|0,42)-.5)*.04;
+ return [Math.min(1,r+v),Math.min(1,g+v*.8),Math.min(1,b+v*.6)];
 }
 
-// ─── Vermont Elevation ────────────────────────────────────
-function vtElevation(nx, nz, detail) {
-  // Green Mountains ridge (N-S, slightly east of center)
-  const ridgeX = 0.42 + 0.04 * Math.sin(nz * 6);
-  const dRidge = Math.abs(nx - ridgeX);
-  const ridge = Math.exp(-dRidge * dRidge * 50) * 0.7;
+/* ═══════════════════════════════════════════════════════════════
+   THREE.JS SCENE
+   ═══════════════════════════════════════════════════════════════ */
+const cv=document.getElementById('c');
+const sc=new THREE.Scene();
+sc.fog=new THREE.FogExp2(0x030708,.006);
+const sz={w:innerWidth,h:innerHeight};
+const cam=new THREE.PerspectiveCamera(50,sz.w/sz.h,.1,600);
+cam.position.set(2,20,26);
 
-  // Mt. Mansfield (highest, north-central)
-  const mansfield = Math.exp(-(Math.pow(nx-.40,2)+Math.pow(nz-.78,2))*120) * 0.35;
-  // Killington
-  const killington = Math.exp(-(Math.pow(nx-.50,2)+Math.pow(nz-.46,2))*100) * 0.28;
-  // Camel's Hump
-  const camel = Math.exp(-(Math.pow(nx-.38,2)+Math.pow(nz-.72,2))*130) * 0.25;
-  // Jay Peak
-  const jay = Math.exp(-(Math.pow(nx-.30,2)+Math.pow(nz-.92,2))*110) * 0.22;
+const ren=new THREE.WebGLRenderer({canvas:cv,antialias:true,powerPreference:'high-performance'});
+ren.setSize(sz.w,sz.h);ren.setPixelRatio(Math.min(devicePixelRatio,2));ren.setClearColor(0x030708);
 
-  // Lake Champlain depression (west)
-  const champlain = Math.max(0, 1 - nx * 10) * 0.25;
-  // CT River valley (east)
-  const eastDist = 1 - nx;
-  const ctValley = Math.max(0, 1 - eastDist * 8) * 0.15 * (0.5 + 0.5 * nz);
-
-  // Base + noise
-  const base = 0.12 + 0.08 * (1 - 2 * Math.abs(nx - 0.45));
-  const noise = fbm(nx * 12, nz * 12, 4) * 0.12 * detail;
-  const fine = fbm(nx * 30, nz * 30, 3) * 0.04 * detail;
-
-  return Math.max(0, base + ridge + mansfield + killington + camel + jay - champlain - ctValley + noise + fine);
-}
-
-// ─── Color from Elevation ─────────────────────────────────
-function terrainColor(elev) {
-  const c = new THREE.Color();
-  if (elev < 0.08) c.setHex(0x1a3a2a);       // deep valley
-  else if (elev < 0.18) c.setHex(0x1e4d2e);   // lowland
-  else if (elev < 0.30) c.setHex(0x2d6b3f);   // forest
-  else if (elev < 0.45) c.setHex(0x3a7d4a);   // mid forest
-  else if (elev < 0.60) c.setHex(0x4a6b3f);   // upper forest
-  else if (elev < 0.75) c.setHex(0x5a6040);   // transition
-  else if (elev < 0.88) c.setHex(0x6a6050);   // alpine
-  else c.setHex(0x8a8878);                     // peak
-  // Slight variation
-  const v = (Math.random() - 0.5) * 0.03;
-  c.r = Math.max(0, Math.min(1, c.r + v));
-  c.g = Math.max(0, Math.min(1, c.g + v));
-  c.b = Math.max(0, Math.min(1, c.b + v));
-  return c;
-}
-
-// ─── Scene Setup ──────────────────────────────────────────
-const canvas = document.getElementById('webgl');
-const scene = new THREE.Scene();
-scene.fog = new THREE.FogExp2(0x050a08, 0.012);
-
-const sizes = { width: innerWidth, height: innerHeight };
-const camera = new THREE.PerspectiveCamera(55, sizes.width / sizes.height, 0.1, 500);
-camera.position.set(0, 18, 22);
-
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
-renderer.setSize(sizes.width, sizes.height);
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.setClearColor(0x050505, 1);
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-const controls = new OrbitControls(camera, canvas);
-controls.enableDamping = true;
-controls.dampingFactor = 0.05;
-controls.autoRotate = true;
-controls.autoRotateSpeed = 0.3;
-controls.maxDistance = 60;
-controls.minDistance = 5;
-controls.maxPolarAngle = Math.PI / 2.1;
+const ctl=new OrbitControls(cam,cv);
+ctl.enableDamping=true;ctl.dampingFactor=.05;ctl.autoRotate=true;ctl.autoRotateSpeed=.25;
+ctl.maxDistance=55;ctl.minDistance=4;ctl.maxPolarAngle=Math.PI/2.15;ctl.target.set(0,0,-2);
 
 // Lights
-const amb = new THREE.AmbientLight(0x405060, 0.6);
-scene.add(amb);
-const dir = new THREE.DirectionalLight(0xfff5e0, 1.2);
-dir.position.set(10, 20, 8);
-dir.castShadow = true;
-dir.shadow.mapSize.set(1024, 1024);
-scene.add(dir);
-const rim = new THREE.DirectionalLight(0x4080ff, 0.3);
-rim.position.set(-10, 5, -10);
-scene.add(rim);
+sc.add(new THREE.AmbientLight(0x506878,.8));
+const sun=new THREE.DirectionalLight(0xffeedd,1.5);sun.position.set(12,25,10);sc.add(sun);
+sc.add(new THREE.DirectionalLight(0x3060aa,.4).translateX(-12).translateY(8).translateZ(-10));
+const hemi=new THREE.HemisphereLight(0x5080a0,0x203020,.5);sc.add(hemi);
 
-// ─── Starfield ────────────────────────────────────────────
-const starGeo = new THREE.BufferGeometry();
-const starCount = 3000;
-const starPos = new Float32Array(starCount * 3);
-for (let i = 0; i < starCount * 3; i++) starPos[i] = (Math.random() - 0.5) * 300;
-starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ size: 0.12, color: 0x556677, sizeAttenuation: true, depthWrite: false })));
+// Stars
+const sG=new THREE.BufferGeometry(),sC=4000,sP=new Float32Array(sC*3);
+for(let i=0;i<sC*3;i++)sP[i]=(Math.random()-.5)*400;
+sG.setAttribute('position',new THREE.BufferAttribute(sP,3));
+sc.add(new THREE.Points(sG,new THREE.PointsMaterial({size:.15,color:0x445566,sizeAttenuation:true,depthWrite:false})));
 
-// ─── Terrain Mesh ─────────────────────────────────────────
-let terrainMesh, waterMesh;
-const terrainGroup = new THREE.Group();
-scene.add(terrainGroup);
+/* ═══════════════════════════════════════════════════════════════
+   TERRAIN
+   ═══════════════════════════════════════════════════════════════ */
+const tGrp=new THREE.Group();sc.add(tGrp);
+let waterMesh;
 
-function buildTerrain() {
-  terrainGroup.clear();
-  const geo = new THREE.BufferGeometry();
-  const verts = [], colors = [], indices = [];
-  const vtCache = [];
+function buildTerrain(){
+ tGrp.clear();
+ const vs=[],cs=[],ix=[];
+ for(let iz=0;iz<=SZ;iz++){for(let jx=0;jx<=SX;jx++){
+  const nx=jx/SX,nz=iz/SZ,inside=inVT(nx,nz);
+  const wx=(nx-.5)*TW,wz=(nz-.5)*TH;
+  let y,r,g,b;
+  if(inside){
+   const e=elev(nx,nz);y=e*ES*P.elev;
+   [r,g,b]=tColor(e);
+  } else { y=-.2;r=.012;g=.02;b=.035; }
+  vs.push(wx,y,wz);cs.push(r,g,b);
+ }}
+ for(let iz=0;iz<SZ;iz++){for(let jx=0;jx<SX;jx++){
+  const a=iz*(SX+1)+jx,b=a+1,c=a+SX+1,d=c+1;
+  ix.push(a,c,b,b,c,d);
+ }}
+ const geo=new THREE.BufferGeometry();
+ geo.setAttribute('position',new THREE.Float32BufferAttribute(vs,3));
+ geo.setAttribute('color',new THREE.Float32BufferAttribute(cs,3));
+ geo.setIndex(ix);geo.computeVertexNormals();
+ const mesh=new THREE.Mesh(geo,new THREE.MeshPhongMaterial({
+  vertexColors:true,side:THREE.FrontSide,shininess:8,specular:0x111111,flatShading:false
+ }));
+ mesh.receiveShadow=true;tGrp.add(mesh);
 
-  for (let iz = 0; iz <= SEG_Z; iz++) {
-    vtCache[iz] = [];
-    for (let ix = 0; ix <= SEG_X; ix++) {
-      const nx = ix / SEG_X, nz = iz / SEG_Z;
-      const inVT = pointInVT(nx, nz);
-      const wx = (nx - 0.5) * TERRAIN_W, wz = (nz - 0.5) * TERRAIN_H;
-      let elev, c;
+ // Water
+ const wg=new THREE.PlaneGeometry(TW*1.6,TH*1.6);wg.rotateX(-Math.PI/2);
+ waterMesh=new THREE.Mesh(wg,new THREE.MeshPhongMaterial({color:0x081828,transparent:true,opacity:.92,shininess:60,specular:0x224466}));
+ waterMesh.position.y=-.08;tGrp.add(waterMesh);
 
-      if (inVT) {
-        elev = vtElevation(nx, nz, params.detail) * ELEV_SCALE * params.elevScale;
-        c = terrainColor(vtElevation(nx, nz, params.detail));
-      } else {
-        elev = -0.15;
-        c = new THREE.Color(0x060d14);
-      }
+ // Lake Champlain
+ const lg=new THREE.PlaneGeometry(1.6,9);lg.rotateX(-Math.PI/2);
+ const lk=new THREE.Mesh(lg,new THREE.MeshPhongMaterial({color:0x0c2040,transparent:true,opacity:.95,shininess:80,specular:0x336688}));
+ lk.position.set(-5.9,.02,1.5);tGrp.add(lk);
 
-      verts.push(wx, elev, wz);
-      colors.push(c.r, c.g, c.b);
-      vtCache[iz][ix] = inVT;
-    }
-  }
-
-  for (let iz = 0; iz < SEG_Z; iz++) {
-    for (let ix = 0; ix < SEG_X; ix++) {
-      const a = iz * (SEG_X + 1) + ix;
-      const b = a + 1;
-      const c = a + SEG_X + 1;
-      const d = c + 1;
-      indices.push(a, c, b, b, c, d);
-    }
-  }
-
-  geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
-  geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-  geo.setIndex(indices);
-  geo.computeVertexNormals();
-
-  terrainMesh = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide }));
-  terrainMesh.receiveShadow = true;
-  terrainGroup.add(terrainMesh);
-
-  // Water plane
-  const waterGeo = new THREE.PlaneGeometry(TERRAIN_W * 1.5, TERRAIN_H * 1.5);
-  waterGeo.rotateX(-Math.PI / 2);
-  waterMesh = new THREE.Mesh(waterGeo, new THREE.MeshLambertMaterial({
-    color: 0x0a1e38, transparent: true, opacity: 0.85
-  }));
-  waterMesh.position.y = -0.05;
-  terrainGroup.add(waterMesh);
-
-  // Lake Champlain highlight
-  const lakeGeo = new THREE.PlaneGeometry(1.8, 10);
-  lakeGeo.rotateX(-Math.PI / 2);
-  const lake = new THREE.Mesh(lakeGeo, new THREE.MeshLambertMaterial({
-    color: 0x0d2847, transparent: true, opacity: 0.9
-  }));
-  lake.position.set(-6.2, 0.01, 2);
-  terrainGroup.add(lake);
+ // VT border glow outline
+ const bPts=VB.map(([x,z])=>new THREE.Vector3((x-.5)*TW, elev(x,z)*ES*P.elev+.08, (z-.5)*TH));
+ bPts.push(bPts[0].clone());
+ const bGeo=new THREE.BufferGeometry().setFromPoints(bPts);
+ tGrp.add(new THREE.Line(bGeo,new THREE.LineBasicMaterial({color:0x16a34a,transparent:true,opacity:.25})));
 }
-
 buildTerrain();
 
-// ─── Mesh Nodes ───────────────────────────────────────────
-let nodePositions = [], nodeZones = [], nodeGroup, connectionLines;
-const ZONE_COLORS = [
-  0x16a34a, 0x2563eb, 0xd97706, 0xdc2626,
-  0x7c3aed, 0x0891b2, 0xc026d3, 0x65a30d,
-  0xea580c, 0x0d9488, 0x4f46e5, 0xbe123c,
-  0x15803d, 0x1d4ed8, 0xb45309, 0x9f1239
-];
+/* ═══════════════════════════════════════════════════════════════
+   MESH NODES
+   ═══════════════════════════════════════════════════════════════ */
+const ZC=[0x16a34a,0x2563eb,0xd97706,0xdc2626,0x7c3aed,0x0891b2,0xc026d3,0x65a30d,0xea580c,0x0d9488,0x4f46e5,0xbe123c,0x15803d,0x1d4ed8,0xb45309,0x9f1239];
+let nGrp,cLines,dataParticles;
+const dataPts=[];
 
-function placeNodes() {
-  if (nodeGroup) scene.remove(nodeGroup);
-  if (connectionLines) scene.remove(connectionLines);
-  nodeGroup = new THREE.Group();
-  nodePositions = [];
-  nodeZones = [];
+function placeNodes(){
+ if(nGrp)sc.remove(nGrp); if(cLines)sc.remove(cLines); if(dataParticles)sc.remove(dataParticles);
+ nGrp=new THREE.Group();nodePos=[];nodeZn=[];
+ let n=0;const target=P.nodes;
+ for(let tries=0;n<target&&tries<target*20;tries++){
+  const nx=Math.random(),nz=Math.random();
+  if(!inVT(nx,nz))continue;
+  const e=elev(nx,nz), wx=(nx-.5)*TW, wz=(nz-.5)*TH, y=e*ES*P.elev+.18;
+  nodePos.push(new THREE.Vector3(wx,y,wz));
+  nodeZn.push(Math.floor(nz*P.zones)%P.zones);
+  n++;
+ }
+ // Points
+ const g=new THREE.BufferGeometry(),p=new Float32Array(n*3),c=new Float32Array(n*3),s=new Float32Array(n);
+ for(let i=0;i<n;i++){
+  p[i*3]=nodePos[i].x;p[i*3+1]=nodePos[i].y;p[i*3+2]=nodePos[i].z;
+  const cc=new THREE.Color(ZC[nodeZn[i]%ZC.length]);
+  c[i*3]=cc.r;c[i*3+1]=cc.g;c[i*3+2]=cc.b;
+  s[i]=.22+Math.random()*.1;
+ }
+ g.setAttribute('position',new THREE.BufferAttribute(p,3));
+ g.setAttribute('color',new THREE.BufferAttribute(c,3));
+ g.setAttribute('size',new THREE.BufferAttribute(s,1));
 
-  // Scatter nodes within Vermont boundary
-  let placed = 0;
-  const target = params.nodeCount;
-  while (placed < target) {
-    const nx = Math.random(), nz = Math.random();
-    if (!pointInVT(nx, nz)) continue;
-
-    const wx = (nx - 0.5) * TERRAIN_W;
-    const wz = (nz - 0.5) * TERRAIN_H;
-    const elev = vtElevation(nx, nz, params.detail) * ELEV_SCALE * params.elevScale;
-    const y = elev + 0.15;
-
-    nodePositions.push(new THREE.Vector3(wx, y, wz));
-    // Zone assignment: spatial Voronoi from zone centers
-    const zoneIdx = Math.floor(nz * params.zoneCount) % params.zoneCount;
-    nodeZones.push(zoneIdx);
-    placed++;
-  }
-
-  // Node particles
-  const nodeGeo = new THREE.BufferGeometry();
-  const pos = new Float32Array(nodePositions.length * 3);
-  const col = new Float32Array(nodePositions.length * 3);
-  const nodeSizes = new Float32Array(nodePositions.length);
-  for (let i = 0; i < nodePositions.length; i++) {
-    pos[i*3] = nodePositions[i].x;
-    pos[i*3+1] = nodePositions[i].y;
-    pos[i*3+2] = nodePositions[i].z;
-    const c = new THREE.Color(ZONE_COLORS[nodeZones[i] % ZONE_COLORS.length]);
-    col[i*3] = c.r; col[i*3+1] = c.g; col[i*3+2] = c.b;
-    nodeSizes[i] = 0.18 + Math.random() * 0.08;
-  }
-  nodeGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  nodeGeo.setAttribute('color', new THREE.BufferAttribute(col, 3));
-  nodeGeo.setAttribute('size', new THREE.BufferAttribute(nodeSizes, 1));
-
-  const nodeMat = new THREE.ShaderMaterial({
-    uniforms: { time: { value: 0 } },
-    vertexShader: `
-      attribute float size;
-      attribute vec3 color;
-      varying vec3 vColor;
-      uniform float time;
-      void main() {
-        vColor = color;
-        vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = size * (200.0 / -mvPos.z) * (1.0 + 0.15 * sin(time * 2.0 + position.x * 3.0));
-        gl_Position = projectionMatrix * mvPos;
-      }
-    `,
-    fragmentShader: `
-      varying vec3 vColor;
-      void main() {
-        float d = length(gl_PointCoord - 0.5) * 2.0;
-        if (d > 1.0) discard;
-        float alpha = 1.0 - d * d;
-        vec3 glow = vColor * 1.4;
-        gl_FragColor = vec4(mix(glow, vColor, d), alpha * 0.9);
-      }
-    `,
-    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending
-  });
-
-  const nodePoints = new THREE.Points(nodeGeo, nodeMat);
-  nodeGroup.add(nodePoints);
-  scene.add(nodeGroup);
-
-  buildConnections();
-  updateStats();
+ const mat=new THREE.ShaderMaterial({
+  uniforms:{uTime:{value:0}},
+  vertexShader:`attribute float size;attribute vec3 color;varying vec3 vc;uniform float uTime;
+   void main(){vc=color;vec4 mv=modelViewMatrix*vec4(position,1.);
+   gl_PointSize=size*(220./-mv.z)*(1.+.18*sin(uTime*2.5+position.x*4.+position.z*3.));
+   gl_Position=projectionMatrix*mv;}`,
+  fragmentShader:`varying vec3 vc;void main(){float d=length(gl_PointCoord-.5)*2.;if(d>1.)discard;
+   float a=smoothstep(1.,.1,d);vec3 g=vc*1.6;
+   gl_FragColor=vec4(mix(g,vc*0.8,d),a*.92);}`,
+  transparent:true,depthWrite:false,blending:THREE.AdditiveBlending
+ });
+ nGrp.add(new THREE.Points(g,mat));sc.add(nGrp);
+ buildConns();stats();
 }
 
-// ─── Connection Lines ─────────────────────────────────────
-let linkCount = 0;
-function buildConnections() {
-  if (connectionLines) scene.remove(connectionLines);
-  if (!params.showConnections) return;
-
-  const rangeWorld = (params.rfRange / 1000) * (TERRAIN_W / 14) * 2.5;
-  const lineVerts = [], lineCols = [];
-  linkCount = 0;
-
-  for (let i = 0; i < nodePositions.length; i++) {
-    for (let j = i + 1; j < nodePositions.length; j++) {
-      const d = nodePositions[i].distanceTo(nodePositions[j]);
-      if (d < rangeWorld) {
-        lineVerts.push(nodePositions[i].x, nodePositions[i].y, nodePositions[i].z);
-        lineVerts.push(nodePositions[j].x, nodePositions[j].y, nodePositions[j].z);
-        const alpha = 1 - d / rangeWorld;
-        lineCols.push(0.1, 0.6*alpha, 0.3*alpha, 0.1, 0.6*alpha, 0.3*alpha);
-        linkCount++;
-      }
-    }
+/* ═══════════════════════════════════════════════════════════════
+   CONNECTIONS + DATA FLOW PARTICLES
+   ═══════════════════════════════════════════════════════════════ */
+function buildConns(){
+ if(cLines)sc.remove(cLines);if(dataParticles)sc.remove(dataParticles);
+ cLines=null;dataParticles=null;dataPts.length=0;
+ if(!P.conn||nodePos.length===0)return;
+ const rng=(P.rf/1000)*TW*.18;
+ const lv=[],lc=[];linkCount=0;
+ for(let i=0;i<nodePos.length;i++){for(let j=i+1;j<nodePos.length;j++){
+  const d=nodePos[i].distanceTo(nodePos[j]);
+  if(d<rng){
+   lv.push(nodePos[i].x,nodePos[i].y,nodePos[i].z,nodePos[j].x,nodePos[j].y,nodePos[j].z);
+   const a=Math.max(.15,1-d/rng);
+   lc.push(.08,.5*a,.25*a,.08,.5*a,.25*a);
+   linkCount++;
+   if(Math.random()<.08)dataPts.push({from:nodePos[i],to:nodePos[j],t:Math.random(),spd:.3+Math.random()*.5});
   }
+ }}
+ if(lv.length===0)return;
+ const lg=new THREE.BufferGeometry();
+ lg.setAttribute('position',new THREE.Float32BufferAttribute(lv,3));
+ lg.setAttribute('color',new THREE.Float32BufferAttribute(lc,3));
+ cLines=new THREE.LineSegments(lg,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.3,depthWrite:false,blending:THREE.AdditiveBlending}));
+ sc.add(cLines);
 
-  if (lineVerts.length === 0) return;
-  const lineGeo = new THREE.BufferGeometry();
-  lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(lineVerts, 3));
-  lineGeo.setAttribute('color', new THREE.Float32BufferAttribute(lineCols, 3));
-  connectionLines = new THREE.LineSegments(lineGeo, new THREE.LineBasicMaterial({
-    vertexColors: true, transparent: true, opacity: 0.35, depthWrite: false, blending: THREE.AdditiveBlending
-  }));
-  scene.add(connectionLines);
-  updateStats();
+ // Data flow particles
+ if(P.data&&dataPts.length>0){
+  const dg=new THREE.BufferGeometry();
+  const dp=new Float32Array(dataPts.length*3);
+  dg.setAttribute('position',new THREE.BufferAttribute(dp,3));
+  dataParticles=new THREE.Points(dg,new THREE.PointsMaterial({size:.12,color:0x40ff80,sizeAttenuation:true,transparent:true,opacity:.7,depthWrite:false,blending:THREE.AdditiveBlending}));
+  sc.add(dataParticles);
+ }
+ stats();
 }
-
 placeNodes();
 
-// ─── Event System ─────────────────────────────────────────
-const activeEvents = [];
+/* ═══════════════════════════════════════════════════════════════
+   EVENTS (VISUAL)
+   ═══════════════════════════════════════════════════════════════ */
+const evts=[];const EC={flood:0x3b82f6,pest:0xf97316,fire:0xef4444};
+const EL={flood:'Flood Event Detected',pest:'Pest Anomaly Confirmed',fire:'Fire Signature Detected'};
 
-function injectEvent(type) {
-  // Pick random node position as epicenter
-  const idx = Math.floor(Math.random() * nodePositions.length);
-  const center = nodePositions[idx].clone();
-  const colorMap = { flood: 0x3b82f6, pest: 0xf97316, fire: 0xef4444 };
-  activeEvents.push({
-    type, center, birth: performance.now() / 1000,
-    color: new THREE.Color(colorMap[type]),
-    ring: null, maxRadius: 3 + Math.random() * 2
-  });
-  eventCount++;
-  updateStats();
-  updateStatusText(type);
+function inject(type){
+ if(nodePos.length===0)return;
+ const idx=Math.floor(Math.random()*nodePos.length);
+ const ctr=nodePos[idx].clone();
+ evts.push({type,ctr,t0:clock.getElapsedTime(),col:new THREE.Color(EC[type]),mesh:null,mr:2.5+Math.random()*2.5});
+ evtCount++;stats();
+ // Status
+ const el=document.getElementById('sysMsg');
+ el.textContent='ALERT — '+EL[type];el.style.color='#f59e0b';
+ setTimeout(()=>{el.textContent='Mesh Active — All Zones Nominal';el.style.color='';},4500);
+ // Log
+ const log=document.getElementById('eventLog');
+ const d=new Date(),ts=d.toLocaleTimeString();
+ log.innerHTML=`<div class="text-${type==='flood'?'blue':type==='pest'?'orange':'red'}-400">[${ts}] ${EL[type]} @ Zone ${nodeZn[idx]}</div>`+log.innerHTML;
+ if(log.children.length>8)log.removeChild(log.lastChild);
 }
 
-function updateEventVisuals(time) {
-  for (let i = activeEvents.length - 1; i >= 0; i--) {
-    const ev = activeEvents[i];
-    const age = time - ev.birth;
-    if (age > 4) {
-      if (ev.ring) scene.remove(ev.ring);
-      activeEvents.splice(i, 1);
-      continue;
-    }
-    const progress = age / 4;
-    const radius = ev.maxRadius * progress;
-    const opacity = (1 - progress) * 0.6;
+function tickEvents(t){
+ for(let i=evts.length-1;i>=0;i--){
+  const ev=evts[i],age=t-ev.t0;
+  if(age>5){if(ev.mesh){sc.remove(ev.mesh);ev.mesh.geometry.dispose();ev.mesh.material.dispose();}evts.splice(i,1);continue;}
+  const p=age/5,r=ev.mr*p,op=(1-p)*.55;
+  if(ev.mesh){sc.remove(ev.mesh);ev.mesh.geometry.dispose();ev.mesh.material.dispose();}
+  const rg=new THREE.RingGeometry(Math.max(.02,r-.12),r+.06,64);rg.rotateX(-Math.PI/2);
+  ev.mesh=new THREE.Mesh(rg,new THREE.MeshBasicMaterial({color:ev.col,transparent:true,opacity:op,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));
+  ev.mesh.position.copy(ev.ctr);ev.mesh.position.y+=.08;sc.add(ev.mesh);
+ }
+}
 
-    if (ev.ring) scene.remove(ev.ring);
-    const ringGeo = new THREE.RingGeometry(Math.max(0.01, radius - 0.15), radius, 48);
-    ringGeo.rotateX(-Math.PI / 2);
-    const ringMat = new THREE.MeshBasicMaterial({
-      color: ev.color, transparent: true, opacity, side: THREE.DoubleSide,
-      depthWrite: false, blending: THREE.AdditiveBlending
-    });
-    ev.ring = new THREE.Mesh(ringGeo, ringMat);
-    ev.ring.position.copy(ev.center);
-    ev.ring.position.y += 0.1;
-    scene.add(ev.ring);
+/* ═══════════════════════════════════════════════════════════════
+   SIMULATED LIVE DATA
+   ═══════════════════════════════════════════════════════════════ */
+let lastAutoEvt=0;
+function simLive(t){
+ // Auto events every 8-15s
+ if(t-lastAutoEvt>8+Math.random()*7){
+  lastAutoEvt=t;
+  const types=['flood','pest','fire'];
+  inject(types[Math.floor(Math.random()*3)]);
+ }
+ // Animate data flow particles
+ if(dataParticles&&P.data){
+  const arr=dataParticles.geometry.attributes.position.array;
+  for(let i=0;i<dataPts.length;i++){
+   const dp=dataPts[i];
+   dp.t+=dp.spd*.016;if(dp.t>1)dp.t-=1;
+   const v=new THREE.Vector3().lerpVectors(dp.from,dp.to,dp.t);
+   arr[i*3]=v.x;arr[i*3+1]=v.y+.05;arr[i*3+2]=v.z;
   }
+  dataParticles.geometry.attributes.position.needsUpdate=true;
+ }
+ // PDR jitter
+ if(Math.floor(t)%3===0)document.getElementById('stP').textContent=(94+Math.random()*5).toFixed(0)+'%';
 }
 
-// ─── Stats ────────────────────────────────────────────────
-let eventCount = 0;
-function updateStats() {
-  document.getElementById('statNodes').textContent = params.nodeCount;
-  document.getElementById('statLinks').textContent = linkCount.toLocaleString();
-  document.getElementById('statEvents').textContent = eventCount;
-  document.getElementById('statPdr').textContent = (95 + Math.random() * 4).toFixed(0) + '%';
+/* ═══════════════════════════════════════════════════════════════
+   STATS
+   ═══════════════════════════════════════════════════════════════ */
+function stats(){
+ document.getElementById('stN').textContent=P.nodes;
+ document.getElementById('stL').textContent=linkCount.toLocaleString();
+ document.getElementById('stE').textContent=evtCount;
 }
 
-function updateStatusText(type) {
-  const msg = {
-    flood: 'ALERT — Flood Event Detected',
-    pest: 'ALERT — Pest Anomaly Confirmed',
-    fire: 'ALERT — Fire Signature Detected'
-  };
-  const el = document.getElementById('systemStatus');
-  el.textContent = msg[type] || 'Mesh Active — All Zones Nominal';
-  el.style.color = type ? '#f59e0b' : '';
-  if (type) setTimeout(() => { el.textContent = 'Mesh Active — All Zones Nominal'; el.style.color = ''; }, 5000);
-}
+/* ═══════════════════════════════════════════════════════════════
+   UI BINDING
+   ═══════════════════════════════════════════════════════════════ */
+function sl(id,vId,key,cb){const e=document.getElementById(id),v=document.getElementById(vId);
+ if(!e)return;e.oninput=()=>{P[key]=parseFloat(e.value);if(v)v.textContent=e.value;if(cb)cb();};}
 
-// ─── UI Binding ───────────────────────────────────────────
-function bindSlider(id, key, cb) {
-  const el = document.getElementById(id);
-  const val = document.getElementById(id + 'Val');
-  if (!el) return;
-  el.addEventListener('input', e => {
-    params[key] = parseFloat(e.target.value);
-    if (val) val.textContent = e.target.value;
-    if (cb) cb();
-  });
-}
+sl('s_nodes','v_nodes','nodes',placeNodes);
+sl('s_rf','v_rf','rf',buildConns);
+sl('s_zones','v_zones','zones',placeNodes);
+sl('s_elev','v_elev','elev',()=>{buildTerrain();placeNodes();});
 
-bindSlider('nodeCount', 'nodeCount', placeNodes);
-bindSlider('rfRange', 'rfRange', buildConnections);
-bindSlider('zoneCount', 'zoneCount', placeNodes);
-bindSlider('elevScale', 'elevScale', () => { buildTerrain(); placeNodes(); });
-bindSlider('detail', 'detail', () => { buildTerrain(); placeNodes(); });
+document.getElementById('cConn').onchange=e=>{P.conn=e.target.checked;buildConns();};
+document.getElementById('cRot').onchange=e=>{ctl.autoRotate=e.target.checked;};
+document.getElementById('cData').onchange=e=>{P.data=e.target.checked;};
+document.getElementById('bFlood').onclick=()=>inject('flood');
+document.getElementById('bPest').onclick=()=>inject('pest');
+document.getElementById('bFire').onclick=()=>inject('fire');
 
-document.getElementById('showConnections').addEventListener('change', e => {
-  params.showConnections = e.target.checked;
-  buildConnections();
-});
-document.getElementById('autoRotate').addEventListener('change', e => {
-  controls.autoRotate = e.target.checked;
-});
+// Navigation
+let curView='overview',flying=false,flyT=0;
+const fS=new THREE.Vector3(),fE=new THREE.Vector3(),fST=new THREE.Vector3(),fET=new THREE.Vector3();
+document.getElementById('warpBtn').onclick=()=>{
+ if(flying)return;flying=true;flyT=0;
+ fS.copy(cam.position);fST.copy(ctl.target);
+ if(curView==='overview'){curView='mtn';fE.set(-1,6,1);fET.set(-1,1.5,-2);
+  document.getElementById('warpTxt').textContent='Return to Overview';
+  document.getElementById('warpIco').setAttribute('icon','lucide:maximize-2');
+ }else{curView='overview';fE.set(2,20,26);fET.set(0,0,-2);
+  document.getElementById('warpTxt').textContent='Fly to Green Mountains';
+  document.getElementById('warpIco').setAttribute('icon','lucide:mountain-snow');
+ }
+ ctl.enabled=false;
+};
 
-document.getElementById('injectFlood').addEventListener('click', () => injectEvent('flood'));
-document.getElementById('injectPest').addEventListener('click', () => injectEvent('pest'));
-document.getElementById('injectFire').addEventListener('click', () => injectEvent('fire'));
+document.getElementById('resetBtn').onclick=()=>{
+ P.nodes=200;P.rf=800;P.zones=8;P.elev=1;P.conn=true;P.rot=true;P.data=true;
+ document.getElementById('s_nodes').value=200;document.getElementById('v_nodes').textContent='200';
+ document.getElementById('s_rf').value=800;document.getElementById('v_rf').textContent='800';
+ document.getElementById('s_zones').value=8;document.getElementById('v_zones').textContent='8';
+ document.getElementById('s_elev').value='1.0';document.getElementById('v_elev').textContent='1.0';
+ document.getElementById('cConn').checked=true;document.getElementById('cRot').checked=true;document.getElementById('cData').checked=true;
+ ctl.autoRotate=true;buildTerrain();placeNodes();
+ cam.position.set(2,20,26);ctl.target.set(0,0,-2);curView='overview';
+ document.getElementById('warpTxt').textContent='Fly to Green Mountains';
+ document.getElementById('warpIco').setAttribute('icon','lucide:mountain-snow');
+};
 
-// ─── Navigation ───────────────────────────────────────────
-let currentView = 'overview';
-let isTransitioning = false, transProgress = 0;
-const tStart = new THREE.Vector3(), tEnd = new THREE.Vector3();
-const tStartTarget = new THREE.Vector3(), tEndTarget = new THREE.Vector3();
+/* ═══════════════════════════════════════════════════════════════
+   RESIZE
+   ═══════════════════════════════════════════════════════════════ */
+onresize=()=>{sz.w=innerWidth;sz.h=innerHeight;cam.aspect=sz.w/sz.h;cam.updateProjectionMatrix();ren.setSize(sz.w,sz.h);ren.setPixelRatio(Math.min(devicePixelRatio,2));};
 
-document.getElementById('warpBtn').addEventListener('click', () => {
-  if (isTransitioning) return;
-  isTransitioning = true;
-  transProgress = 0;
-  tStart.copy(camera.position);
-  tStartTarget.copy(controls.target);
+/* ═══════════════════════════════════════════════════════════════
+   RENDER LOOP
+   ═══════════════════════════════════════════════════════════════ */
+const clock=new THREE.Clock();
+setTimeout(()=>document.getElementById('loading').classList.add('hide'),600);
 
-  if (currentView === 'overview') {
-    currentView = 'mountains';
-    tEnd.set(-1, 8, 2);
-    tEndTarget.set(-1, 2, 0);
-    document.getElementById('warpText').textContent = 'Return to Overview';
-    document.getElementById('warpIcon').setAttribute('icon', 'lucide:maximize-2');
-  } else {
-    currentView = 'overview';
-    tEnd.set(0, 18, 22);
-    tEndTarget.set(0, 0, 0);
-    document.getElementById('warpText').textContent = 'Fly to Green Mountains';
-    document.getElementById('warpIcon').setAttribute('icon', 'lucide:mountain-snow');
-  }
-  controls.enabled = false;
-});
+(function tick(){
+ const dt=clock.getDelta(),t=clock.getElapsedTime();
 
-document.getElementById('resetBtn').addEventListener('click', () => {
-  params.nodeCount=200; params.rfRange=800; params.zoneCount=8;
-  params.elevScale=1.0; params.detail=1.0;
-  const defs = {nodeCount:200, rfRange:800, zoneCount:8, elevScale:'1.0', detail:'1.0'};
-  Object.entries(defs).forEach(([k,v]) => {
-    const el = document.getElementById(k);
-    if(el) el.value = v;
-    const vl = document.getElementById(k+'Val');
-    if(vl) vl.textContent = v;
-  });
-  document.getElementById('showConnections').checked = true;
-  document.getElementById('autoRotate').checked = true;
-  controls.autoRotate = true;
-  params.showConnections = true;
-  buildTerrain(); placeNodes();
-  camera.position.set(0, 18, 22);
-  controls.target.set(0, 0, 0);
-  currentView = 'overview';
-  document.getElementById('warpText').textContent = 'Fly to Green Mountains';
-  document.getElementById('warpIcon').setAttribute('icon', 'lucide:mountain-snow');
-});
+ if(flying){flyT+=dt/2.2;const s=flyT*flyT*(3-2*flyT);
+  cam.position.lerpVectors(fS,fE,Math.min(s,1));
+  ctl.target.lerpVectors(fST,fET,Math.min(s,1));
+  if(flyT>=1){flying=false;ctl.enabled=true;}
+ }else{ctl.update();}
 
-// ─── Resize ───────────────────────────────────────────────
-addEventListener('resize', () => {
-  sizes.width = innerWidth; sizes.height = innerHeight;
-  camera.aspect = sizes.width / sizes.height;
-  camera.updateProjectionMatrix();
-  renderer.setSize(sizes.width, sizes.height);
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-});
+ // Shader time
+ if(nGrp?.children[0])nGrp.children[0].material.uniforms.uTime.value=t;
+ // Water
+ if(waterMesh)waterMesh.position.y=-.08+Math.sin(t*.4)*.025;
+ // Events
+ tickEvents(t);
+ // Live sim
+ simLive(t);
+ // Camera info
+ const cp=document.getElementById('camPos');
+ if(cp){const{x,y,z}=cam.position;cp.textContent=`CAM ${x.toFixed(0)}, ${y.toFixed(0)}, ${z.toFixed(0)}`;}
 
-// ─── Animation Loop ───────────────────────────────────────
-const clock = new THREE.Clock();
-const cameraInfo = document.getElementById('cameraInfo');
-
-function smoothstep(t) { return t * t * (3 - 2 * t); }
-
-function tick() {
-  const delta = clock.getDelta();
-  const elapsed = clock.getElapsedTime();
-
-  // Transition
-  if (isTransitioning) {
-    transProgress += delta / 2.0;
-    const t = smoothstep(Math.min(transProgress, 1));
-    camera.position.lerpVectors(tStart, tEnd, t);
-    const ct = new THREE.Vector3().lerpVectors(tStartTarget, tEndTarget, t);
-    controls.target.copy(ct);
-    if (transProgress >= 1) { isTransitioning = false; controls.enabled = true; }
-  } else {
-    controls.update();
-  }
-
-  // Animate node shader
-  if (nodeGroup && nodeGroup.children[0]) {
-    nodeGroup.children[0].material.uniforms.time.value = elapsed;
-  }
-
-  // Events
-  updateEventVisuals(elapsed);
-
-  // Water shimmer
-  if (waterMesh) waterMesh.position.y = -0.05 + Math.sin(elapsed * 0.5) * 0.02;
-
-  // Camera info
-  if (cameraInfo) {
-    const {x,y,z} = camera.position;
-    cameraInfo.textContent = `POS: ${x.toFixed(0)}, ${y.toFixed(0)}, ${z.toFixed(0)}`;
-  }
-
-  renderer.render(scene, camera);
-  requestAnimationFrame(tick);
-}
-
-tick();
+ ren.render(sc,cam);requestAnimationFrame(tick);
+})();
 </script>
-</body>
-</html>
+</body></html>
