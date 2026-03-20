@@ -1,0 +1,21 @@
+[package]
+name = "verdant-safla"
+version = "0.1.0"
+edition = "2024"
+description = "SAFLA: Self-Aware Feedback Loop Algorithm for Verdant mesh self-healing"
+license = "MIT OR Apache-2.0"
+
+[features]
+default = []
+std = ["serde/std", "heapless/serde"]
+
+[dependencies]
+verdant-core = { path = "../verdant-core" }
+verdant-vector = { path = "../verdant-vector" }
+verdant-mesh = { path = "../verdant-mesh" }
+serde = { version = "1", default-features = false, features = ["derive"] }
+postcard = { version = "1.1", default-features = false, features = ["experimental-derive"] }
+heapless = { version = "0.8", default-features = false, features = ["serde"] }
+
+[dev-dependencies]
+mockall = "0.13"

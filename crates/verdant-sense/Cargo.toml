@@ -1,0 +1,19 @@
+[package]
+name = "verdant-sense"
+version = "0.1.0"
+edition = "2024"
+description = "Sensor abstraction layer for Verdant: CSI, environmental sensors, fusion"
+license = "MIT OR Apache-2.0"
+
+[features]
+default = []
+std = ["serde/std", "heapless/serde"]
+
+[dependencies]
+verdant-core = { path = "../verdant-core" }
+serde = { version = "1", default-features = false, features = ["derive"] }
+heapless = { version = "0.8", default-features = false, features = ["serde"] }
+micromath = "2.1"
+
+[dev-dependencies]
+mockall = "0.13"

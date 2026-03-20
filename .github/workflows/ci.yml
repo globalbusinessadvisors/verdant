@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -D warnings
+
+jobs:
+  fmt:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - run: cargo fmt --all -- --check
+
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+
+  test-rust:
+    name: Rust Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Unit + London School tests
+        run: cargo test --workspace
+
+      - name: Integration tests
+        run: cargo test -p verdant-sim --test full_pipeline
+
+  test-ui:
+    name: UI Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ui
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+
+  wasm:
+    name: WASM Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      - name: Build WASM
+        run: cd crates/verdant-qudag-wasm && wasm-pack build --target web --release
+      - name: Check WASM size
+        run: |
+          SIZE=$(stat -c%s crates/verdant-qudag-wasm/pkg/verdant_qudag_wasm_bg.wasm)
+          echo "WASM size: $SIZE bytes"
+          if [ "$SIZE" -gt 512000 ]; then
+            echo "Error: WASM binary exceeds 500KB limit" >&2
+            exit 1
+          fi
+
+  fuzz:
+    name: Fuzz (5 min)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+      - uses: Swatinem/rust-cache@v2
+      - name: Install cargo-fuzz
+        run: cargo install cargo-fuzz
+      - name: Fuzz message deserialization
+        run: |
+          cd crates/verdant-qudag
+          timeout 150 cargo +nightly fuzz run fuzz_message_deser -- -max_total_time=150 || true
+      - name: Fuzz DAG insertion
+        run: |
+          cd crates/verdant-qudag
+          timeout 150 cargo +nightly fuzz run fuzz_dag_insert -- -max_total_time=150 || true

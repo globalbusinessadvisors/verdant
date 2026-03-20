@@ -1,0 +1,20 @@
+[package]
+name = "verdant-robotics"
+version = "0.1.0"
+edition = "2024"
+description = "Agentic robotics coordination for Verdant: missions, navigation, safety, swarm"
+license = "MIT OR Apache-2.0"
+
+[features]
+default = []
+std = ["serde/std", "heapless/serde"]
+
+[dependencies]
+verdant-core = { path = "../verdant-core" }
+verdant-mesh = { path = "../verdant-mesh" }
+serde = { version = "1", default-features = false, features = ["derive"] }
+heapless = { version = "0.8", default-features = false, features = ["serde"] }
+
+[dev-dependencies]
+mockall = "0.13"
+proptest = "1"

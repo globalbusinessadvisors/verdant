@@ -1,0 +1,23 @@
+[package]
+name = "verdant-vector"
+version = "0.1.0"
+edition = "2024"
+description = "Self-learning vector graph for Verdant environmental intelligence"
+license = "MIT OR Apache-2.0"
+
+[features]
+default = []
+std = ["serde/std", "postcard/use-std", "heapless/serde", "lz4_flex/std"]
+
+[dependencies]
+verdant-core = { path = "../verdant-core" }
+serde = { version = "1", default-features = false, features = ["derive"] }
+postcard = { version = "1.1", default-features = false, features = ["experimental-derive"] }
+heapless = { version = "0.8", default-features = false, features = ["serde"] }
+micromath = "2.1"
+lz4_flex = { version = "0.13", default-features = false, features = ["safe-encode", "safe-decode"] }
+
+[dev-dependencies]
+postcard = { version = "1.1", features = ["use-std"] }
+mockall = "0.13"
+proptest = "1"

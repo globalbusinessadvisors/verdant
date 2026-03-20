@@ -1,0 +1,21 @@
+[package]
+name = "verdant-core"
+version = "0.1.0"
+edition = "2024"
+description = "Shared types, traits, and configuration for the Verdant mesh"
+license = "MIT OR Apache-2.0"
+
+[features]
+default = []
+std = ["serde/std", "postcard/use-std", "heapless/serde"]
+defmt = ["dep:defmt"]
+
+[dependencies]
+serde = { version = "1", default-features = false, features = ["derive"] }
+postcard = { version = "1.1", default-features = false, features = ["experimental-derive"] }
+heapless = { version = "0.8", default-features = false, features = ["serde"] }
+defmt = { version = "0.3", optional = true }
+
+[dev-dependencies]
+postcard = { version = "1.1", features = ["use-std"] }
+trybuild = "1"

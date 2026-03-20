@@ -1,0 +1,31 @@
+[package]
+name = "verdant-qudag"
+version = "0.1.0"
+edition = "2024"
+description = "QuDAG: Post-quantum DAG protocol for Verdant mesh communication"
+license = "MIT OR Apache-2.0"
+
+[features]
+default = []
+std = [
+    "serde/std",
+    "postcard/use-std",
+    "heapless/serde",
+    "dep:pqcrypto-dilithium",
+    "dep:pqcrypto-kyber",
+    "dep:pqcrypto-traits",
+]
+
+[dependencies]
+verdant-core = { path = "../verdant-core" }
+serde = { version = "1", default-features = false, features = ["derive"] }
+postcard = { version = "1.1", default-features = false, features = ["experimental-derive"] }
+heapless = { version = "0.8", default-features = false, features = ["serde"] }
+pqcrypto-dilithium = { version = "0.5", optional = true }
+pqcrypto-kyber = { version = "0.8", optional = true }
+pqcrypto-traits = { version = "0.3", optional = true }
+
+[dev-dependencies]
+postcard = { version = "1.1", features = ["use-std"] }
+mockall = "0.13"
+proptest = "1"

@@ -1,0 +1,28 @@
+[package]
+name = "verdant-qudag-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2024"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+verdant-qudag = { path = ".." }
+verdant-core = { path = "../../verdant-core" }
+postcard = { version = "1.1", features = ["use-std"] }
+heapless = { version = "0.8", features = ["serde"] }
+arbitrary = { version = "1", features = ["derive"] }
+
+[[bin]]
+name = "fuzz_message_deser"
+path = "fuzz_targets/fuzz_message_deser.rs"
+doc = false
+
+[[bin]]
+name = "fuzz_dag_insert"
+path = "fuzz_targets/fuzz_dag_insert.rs"
+doc = false
+
+[workspace]

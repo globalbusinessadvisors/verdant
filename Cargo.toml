@@ -1,0 +1,15 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/verdant-core",
+    "crates/verdant-vector",
+    "crates/verdant-qudag",
+    "crates/verdant-mesh",
+    "crates/verdant-sense",
+    "crates/verdant-safla",
+    "crates/verdant-firmware",
+    "crates/verdant-gateway",
+    "crates/verdant-robotics",
+    "crates/verdant-sim",
+    "crates/verdant-qudag-wasm",
+]

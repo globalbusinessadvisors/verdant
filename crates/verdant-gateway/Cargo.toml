@@ -1,0 +1,22 @@
+[package]
+name = "verdant-gateway"
+version = "0.1.0"
+edition = "2024"
+description = "Raspberry Pi gateway daemon for the Verdant mesh"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+verdant-core = { path = "../verdant-core", features = ["std"] }
+verdant-mesh = { path = "../verdant-mesh", features = ["std"] }
+verdant-safla = { path = "../verdant-safla", features = ["std"] }
+tokio = { version = "1", features = ["full"] }
+axum = { version = "0.8", features = ["ws"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+heapless = { version = "0.8", features = ["serde"] }
+postcard = { version = "1.1", features = ["use-std"] }
+
+[dev-dependencies]
+mockall = "0.13"
+axum-test = "17"
+tower = "0.5"

@@ -1,0 +1,31 @@
+[package]
+name = "verdant-firmware"
+version = "0.1.0"
+edition = "2024"
+description = "ESP32-S3 node firmware for the Verdant mesh"
+license = "MIT OR Apache-2.0"
+
+[features]
+default = []
+# Enable for host-based testing (x86). Pulls in std for mocks.
+std = [
+    "verdant-core/std",
+    "verdant-vector/std",
+    "verdant-mesh/std",
+    "verdant-safla/std",
+    "verdant-sense/std",
+]
+
+[dependencies]
+verdant-core = { path = "../verdant-core" }
+verdant-vector = { path = "../verdant-vector" }
+verdant-qudag = { path = "../verdant-qudag" }
+verdant-mesh = { path = "../verdant-mesh" }
+verdant-safla = { path = "../verdant-safla" }
+verdant-sense = { path = "../verdant-sense" }
+heapless = { version = "0.8", default-features = false, features = ["serde"] }
+postcard = { version = "1.1", default-features = false, features = ["experimental-derive"] }
+
+[dev-dependencies]
+mockall = "0.13"
+postcard = { version = "1.1", features = ["use-std"] }

@@ -1,0 +1,25 @@
+[package]
+name = "verdant-qudag-wasm"
+version = "0.1.0"
+edition = "2024"
+description = "WASM bridge for QuDAG verification in browser"
+license = "MIT OR Apache-2.0"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = []
+
+[dependencies]
+verdant-qudag = { path = "../verdant-qudag" }
+verdant-core = { path = "../verdant-core" }
+wasm-bindgen = "0.2"
+serde = { version = "1", features = ["derive"] }
+serde-wasm-bindgen = "0.6"
+serde_json = "1"
+heapless = { version = "0.8", features = ["serde"] }
+ml-dsa = "0.1.0-rc.7"
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3"
